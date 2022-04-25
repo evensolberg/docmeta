@@ -1,0 +1,22 @@
+[package]
+name = "docmeta"
+version = "0.2.4"
+authors = ["Even Solberg"]
+edition = "2021"
+include = ["src/main.rs", "README.md"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "3.1.12", features = ["cargo", "color"] }
+env_logger = "0.9.0"
+epub = "1.2.3"
+log = "0.4.16"
+mobi = "0.7.0"
+pdf = "0.7.2"
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = 'abort'
