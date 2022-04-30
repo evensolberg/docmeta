@@ -9,6 +9,7 @@ use log::LevelFilter;
 mod epub;
 mod mobi;
 mod pdf;
+mod rename_file;
 mod utils;
 
 // Useful stuff
@@ -24,8 +25,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         .long_about("This program will do something.")
         .arg(
             Arg::new("read")
-                .value_name("FILE(S)")
-                .help("One or more file(s) to process. Wildcards and multiple_occurrences files (e.g. 2019*.pdf 2020*.pdf) are supported.")
+                .value_name("filename(S)")
+                .help("One or more filename(s) to process. Wildcards and multiple_occurrences filenames (e.g. 2019*.pdf 2020*.pdf) are supported.")
                 .takes_value(true)
                 .multiple_occurrences(true),
         )
@@ -59,8 +60,24 @@ fn run() -> Result<(), Box<dyn Error>> {
                 .short('o')
                 .long("detail-off")
                 .multiple_occurrences(false)
-                .help("Don't export detailed information about each file processed.")
+                .help("Don't export detailed information about each filename processed.")
                 .takes_value(false)
+        )
+        .arg( // Don't export detail information
+            Arg::new("dry-run")
+                .short('r')
+                .long("dry-run")
+                .multiple_occurrences(false)
+                .help("Performs a dry-run without executing any actual changes.")
+                .takes_value(false)
+        )
+        .arg( // Rename filenames
+            Arg::new("rename")
+                .short('n')
+                .long("rename-filename")
+                .multiple_occurrences(false)
+                .help("Rename filenames based on the provided pattern as they are processed.")
+                .takes_value(true)
         )
         .get_matches();
 
@@ -81,44 +98,48 @@ fn run() -> Result<(), Box<dyn Error>> {
     // Initialize logging
     logbuilder.target(Target::Stdout).init();
 
-    // Do the work
-    for file in cli_args.values_of("read").unwrap() {
-        log::debug!("Processing file {}", file);
-        let ext = utils::get_extension(file);
+    // Initialize variables
+    let mut tags;
+    let dry_run = cli_args.is_present("dry-run");
 
-        match ext.as_ref() {
+    // Do the work
+    for filename in cli_args.values_of("read").unwrap() {
+        log::debug!("Processing filename {}", filename);
+        let ext = utils::get_extension(filename);
+
+        tags = match ext.as_ref() {
             "pdf" => {
-                log::info!("Processing PDF file {}", file);
-                pdf::print_metadata(file)?;
+                log::info!("Processing PDF filename {}", filename);
+                pdf::get_metadata(filename)?
             }
             "epub" => {
-                log::info!("Processing EPUB file {}", file);
-                epub::print_metadata(file)?;
+                log::info!("Processing EPUB filename {}", filename);
+                epub::get_metadata(filename)?
             }
             "mobi" => {
-                log::info!("Processing MOBI file {}", file);
-                mobi::print_metadata(file)?;
-            }
-            "docx" => {
-                log::info!("Processing DOCX file {}", file);
-            }
-            "xls" => {
-                log::info!("Processing XLS file {}", file);
-            }
-            "xlsx" => {
-                log::info!("Processing XLSX file {}", file);
-            }
-            "ppt" => {
-                log::info!("Processing PPT file {}", file);
-            }
-            "pptx" => {
-                log::info!("Processing PPTX file {}", file);
-            }
-            "txt" => {
-                log::info!("Processing TXT file {}", file);
+                log::info!("Processing MOBI filename {}", filename);
+                mobi::get_metadata(filename)?
             }
             _ => {
-                log::info!("Processing unknown file {}", file);
+                log::info!("Processing unknown filename {}", filename);
+                return Err("Unknown filename type".into());
+            }
+        };
+
+        tags.insert(
+            "Year".to_string(),
+            utils::get_year(&tags.get("Date").unwrap_or(&"".to_string())),
+        );
+
+        if !cli_args.is_present("detail-off") && !cli_args.is_present("quiet") {
+            utils::print_metadata(&tags);
+        }
+
+        if cli_args.is_present("rename") {
+            let pattern = cli_args.value_of("rename").unwrap_or("");
+            let res = rename_file::rename_file(&filename, &tags, pattern, dry_run)?;
+            if !cli_args.is_present("quiet") {
+                log::info!("{} --> {}", filename, res);
             }
         }
     }

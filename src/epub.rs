@@ -2,7 +2,7 @@ use std::{collections::HashMap, error::Error};
 
 use epub::doc::EpubDoc;
 
-fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
+pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let doc = EpubDoc::new(filename)?;
     let metadata = doc.metadata;
     log::debug!("metadata = {:?}", metadata);
@@ -88,18 +88,4 @@ fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error
     // return the metadata
     log::debug!("metadata_map = {:?}", metadata_map);
     Ok(metadata_map)
-}
-
-/// Print the ePub metadata
-pub fn print_metadata(filename: &str) -> Result<(), Box<dyn Error>> {
-    let metadata = get_metadata(filename)?;
-    for (key, mut value) in metadata {
-        if value.is_empty() {
-            value = "N/A".to_string();
-        }
-        println!("{}: {}", key, value);
-    }
-
-    // return safely
-    Ok(())
 }

@@ -5,7 +5,7 @@ use pdf::file::File;
 // use pdf::object::{FieldDictionary, FieldType, Resolve};
 
 /// get the metadata from a PDF file
-fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
+pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     log::debug!("Opening file: {}", filename);
     let file = match File::<Vec<u8>>::open(&filename) {
         Ok(f) => f,
@@ -56,6 +56,14 @@ fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error
         metadata_map.insert("Publisher".to_string(), "".to_string());
     }
 
+    if let Some(date) = metadata.get("CreationDate") {
+        log::debug!("date = {:?}", date);
+        metadata_map.insert("Date".to_string(), date.to_string().replace('\"', ""));
+    } else {
+        log::debug!("No date found in metadata.");
+        metadata_map.insert("Date".to_string(), "".to_string());
+    }
+
     log::debug!("metadata_map = {:?}", metadata_map);
     log::debug!("metadata_map.len() = {}", metadata_map.len());
     for (key, value) in &metadata_map {
@@ -64,18 +72,4 @@ fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error
 
     // return safely
     Ok(metadata_map)
-}
-
-/// Print the ePub metadata
-pub fn print_metadata(filename: &str) -> Result<(), Box<dyn Error>> {
-    let metadata = get_metadata(filename)?;
-    for (key, mut value) in metadata {
-        if value.is_empty() {
-            value = "N/A".to_string();
-        }
-        println!("{}: {}", key, value);
-    }
-
-    // return safely
-    Ok(())
 }
