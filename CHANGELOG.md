@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Initial version
+- Add file rename based on metadata
 
 ### Miscellaneous Tasks
 

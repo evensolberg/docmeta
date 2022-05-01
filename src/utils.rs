@@ -17,7 +17,7 @@ pub fn get_extension(filename: &str) -> String {
 pub fn get_year(date: &str) -> String {
     log::debug!("date = {}", date);
     let year = if date.starts_with("D:") {
-        let subdate = date.split(":").nth(1).unwrap_or("").to_string();
+        let subdate = date.split(':').nth(1).unwrap_or("").to_string();
         subdate[0..4].to_string()
     } else {
         date.split('-').next().unwrap_or("").to_string()
@@ -32,13 +32,19 @@ pub fn get_year(date: &str) -> String {
 
 /// Print the metadata
 pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
-    for (key, value) in tags {
-        if value.is_empty() {
-            println!("{}: N/A", key);
-        } else {
-            println!("{}: {}", key, value);
+    if !tags.is_empty() {
+        for (key, value) in tags {
+            if value.is_empty() {
+                println!("{}: N/A", key);
+            } else {
+                println!("{}: {}", key, value);
+            }
         }
     }
+}
+
+pub fn new_hashmap() -> std::collections::HashMap<String, String> {
+    std::collections::HashMap::new()
 }
 
 #[cfg(test)]

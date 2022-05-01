@@ -14,7 +14,9 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         }
     };
 
-    let metadata = file.trailer.info_dict.unwrap();
+    // Read the file. TODO: Make this more robust.
+    let metadata = file.trailer.info_dict.unwrap_or_default();
+
     log::debug!("metadata = {:?}", metadata);
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();

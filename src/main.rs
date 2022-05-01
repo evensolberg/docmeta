@@ -110,7 +110,13 @@ fn run() -> Result<(), Box<dyn Error>> {
         tags = match ext.as_ref() {
             "pdf" => {
                 log::info!("Processing PDF filename {}", filename);
-                pdf::get_metadata(filename)?
+                let pdf_m = pdf::get_metadata(filename);
+                if let Ok(pdf_d) = pdf_m {
+                    pdf_d
+                } else {
+                    log::error!("Error processing PDF filename {}", filename);
+                    continue;
+                }
             }
             "epub" => {
                 log::info!("Processing EPUB filename {}", filename);
@@ -121,14 +127,14 @@ fn run() -> Result<(), Box<dyn Error>> {
                 mobi::get_metadata(filename)?
             }
             _ => {
-                log::info!("Processing unknown filename {}", filename);
-                return Err("Unknown filename type".into());
+                log::warn!("Unknown filename {}", filename);
+                crate::utils::new_hashmap()
             }
         };
 
         tags.insert(
             "Year".to_string(),
-            utils::get_year(&tags.get("Date").unwrap_or(&"".to_string())),
+            utils::get_year(tags.get("Date").unwrap_or(&"".to_string())),
         );
 
         if !cli_args.is_present("detail-off") && !cli_args.is_present("quiet") {
@@ -137,7 +143,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
         if cli_args.is_present("rename") {
             let pattern = cli_args.value_of("rename").unwrap_or("");
-            let res = rename_file::rename_file(&filename, &tags, pattern, dry_run)?;
+            let res = rename_file::rename_file(filename, &tags, pattern, dry_run)?;
             if !cli_args.is_present("quiet") {
                 log::info!("{} --> {}", filename, res);
             }
