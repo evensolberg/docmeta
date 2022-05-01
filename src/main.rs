@@ -109,25 +109,25 @@ fn run() -> Result<(), Box<dyn Error>> {
 
         tags = match ext.as_ref() {
             "pdf" => {
-                log::info!("Processing PDF filename {}", filename);
+                log::info!("Processing PDF: {}", filename);
                 let pdf_m = pdf::get_metadata(filename);
                 if let Ok(pdf_d) = pdf_m {
                     pdf_d
                 } else {
-                    log::error!("Error processing PDF filename {}", filename);
+                    log::error!("Error processing PDF: {}", filename);
                     continue;
                 }
             }
             "epub" => {
-                log::info!("Processing EPUB filename {}", filename);
+                log::info!("Processing EPUB: {}", filename);
                 epub::get_metadata(filename)?
             }
             "mobi" => {
-                log::info!("Processing MOBI filename {}", filename);
+                log::info!("Processing MOBI: {}", filename);
                 mobi::get_metadata(filename)?
             }
             _ => {
-                log::warn!("Unknown filename {}", filename);
+                log::warn!("Unknown file type: {}", filename);
                 crate::utils::new_hashmap()
             }
         };
