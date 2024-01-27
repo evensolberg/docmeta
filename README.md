@@ -24,6 +24,8 @@ OPTIONS:
     -V, --version                     Print version information
 ```
 
+The `-o`/`--detail-off` option is only relevant when performing renames.
+
 ## Rename Patterns
 
 | Pattern | Description |
