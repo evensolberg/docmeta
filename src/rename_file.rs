@@ -99,7 +99,7 @@ pub fn rename_file(
         log::debug!("dr: {} --> {}", filename, new_path.display());
     } else {
         // Get parent dir
-        let rn_res = std::fs::rename(&filename, &new_path);
+        let rn_res = std::fs::rename(filename, &new_path);
         match rn_res {
             Ok(_) => log::debug!("{} --> {}", filename, new_path.to_string_lossy()),
             Err(err) => {

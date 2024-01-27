@@ -3,7 +3,7 @@ use mobi::Mobi;
 use std::{collections::HashMap, error::Error};
 
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
-    let mobi_file = Mobi::from_path(&filename)?;
+    let mobi_file = Mobi::from_path(filename)?;
     log::debug!("metadata = {:?}", mobi_file.metadata);
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();

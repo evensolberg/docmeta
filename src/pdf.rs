@@ -7,7 +7,7 @@ use pdf::file::File;
 /// get the metadata from a PDF file
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     log::debug!("Opening file: {}", filename);
-    let file = match File::<Vec<u8>>::open(&filename) {
+    let file = match File::<Vec<u8>>::open(filename) {
         Ok(f) => f,
         Err(e) => {
             return Err(format!("Error opening file: {}. Error: {}", filename, e).into());
@@ -49,8 +49,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
             "Publisher".to_string(),
             publisher
                 .to_string()
-                .replace('\"', "")
-                .replace('/', "")
+                .replace(['\"', '/'], "")
                 .replace("#20", " "),
         );
     } else {
