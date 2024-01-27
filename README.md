@@ -24,7 +24,7 @@ OPTIONS:
     -V, --version                     Print version information
 ```
 
-The `-r`/`--dry-run`, `-o`/`--detail-off`  and `-q`/`--quiet` options are only relevant when performing renames.
+The `-r`/`--dry-run`, `-o`/`--detail-off`,  and `-q`/`--quiet` options are only relevant when performing renames.
 
 ## Rename Patterns
 
