@@ -5,23 +5,18 @@ Show metadata from ePUB, Mobi, and PDF files and rename the files based on the m
 ## Usage
 
 ```console
-USAGE:
-    docmeta [OPTIONS] [filename(S)]...
+Usage: docmeta [OPTIONS] --rename-file <rename-pattern> <filename(s)>...
 
-ARGS:
-    <filename(S)>...    One or more filename(s) to process. Wildcards and multiple_occurrences
-                        filenames (e.g. 2019*.pdf 2020*.pdf) are supported.
+Arguments:
+  <filename(s)>...  One or more filename(s) to process. Wildcards and multiple_occurrences filenames (e.g. 2019*.pdf 2020*.pdf) are supported.
 
-OPTIONS:
-    -h, --help                        Print help information
-    -n, --rename-filename <rename>    Rename filenames based on the provided pattern as they are
-                                      processed.
-    -o, --detail-off                  Don't export detailed information about each filename
-                                      processed.
-    -p, --print-summary               Print summary detail for each session processed.
-    -q, --quiet                       Don't produce any output except errors while working.
-    -r, --dry-run                     Performs a dry-run without executing any actual changes.
-    -V, --version                     Print version information
+Options:
+  -q, --quiet                         Don't produce any output except errors while working.
+  -o, --detail-off                    Don't export detailed information about each filename processed.
+  -r, --dry-run                       Performs a dry-run without executing any actual changes.
+  -n, --rename-file <rename-pattern>  Change filenames based on the provided pattern as they are processed.
+  -h, --help                          Print help (see more with '--help')
+  -V, --version                       Print version
 ```
 
 The `-r`/`--dry-run`, `-o`/`--detail-off`,  and `-q`/`--quiet` options are only relevant when performing renames.
@@ -31,7 +26,7 @@ The `-r`/`--dry-run`, `-o`/`--detail-off`,  and `-q`/`--quiet` options are only 
 | Pattern | Description |
 |:---:| ---|
 | `%t` | Title |
-| `%a` | Author | 
+| `%a` | Author |
 | `%p` | Publisher |
 | `%i` | Identifier (typically ISBN Number) |
 | `%y` | Year |

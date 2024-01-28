@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - CHANGELOG update
+- Fixed some text output
+
+### Refactor
+
+- Remove lints
 
 ## [0.3.0] - 2022-05-01
 

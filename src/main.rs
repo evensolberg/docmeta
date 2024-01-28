@@ -1,4 +1,4 @@
-use clap::{Arg, Command}; // Command line
+use clap::parser::ValueSource;
 use std::error::Error;
 
 // Logging
@@ -6,6 +6,7 @@ use env_logger::{Builder, Target};
 use log::LevelFilter;
 
 // Document handling
+mod cli;
 mod epub;
 mod mobi;
 mod pdf;
@@ -18,77 +19,20 @@ mod utils;
 /// This is where the magic happens.
 fn run() -> Result<(), Box<dyn Error>> {
     // Set up the command line. Ref https://docs.rs/clap for details.
-    let cli_args = Command::new(clap::crate_name!())
-        .about(clap::crate_description!())
-        .version(clap::crate_version!())
-        .author(clap::crate_authors!("\n"))
-        .long_about("This program will do something.")
-        .arg(
-            Arg::new("read")
-                .value_name("filename(S)")
-                .help("One or more filename(s) to process. Wildcards and multiple_occurrences filenames (e.g. 2019*.pdf 2020*.pdf) are supported.")
-                .takes_value(true)
-                .multiple_occurrences(true),
-        )
-        .arg( // Hidden debug parameter
-            Arg::new("debug")
-                .short('d')
-                .long("debug")
-                .multiple_occurrences(true)
-                .help("Output debug information as we go. Supply it twice for trace-level logs.")
-                .takes_value(false)
-                .hide(true),
-        )
-        .arg( // Don't print any information
-            Arg::new("quiet")
-                .short('q')
-                .long("quiet")
-                .multiple_occurrences(false)
-                .help("Don't produce any output except errors while working.")
-                .takes_value(false)
-        )
-        .arg( // Print summary information
-            Arg::new("print-summary")
-                .short('p')
-                .long("print-summary")
-                .multiple_occurrences(false)
-                .help("Print summary detail for each session processed.")
-                .takes_value(false)
-        )
-        .arg( // Don't export detail information
-            Arg::new("detail-off")
-                .short('o')
-                .long("detail-off")
-                .multiple_occurrences(false)
-                .help("Don't export detailed information about each filename processed.")
-                .takes_value(false)
-        )
-        .arg( // Don't export detail information
-            Arg::new("dry-run")
-                .short('r')
-                .long("dry-run")
-                .multiple_occurrences(false)
-                .help("Performs a dry-run without executing any actual changes.")
-                .takes_value(false)
-        )
-        .arg( // Rename filenames
-            Arg::new("rename")
-                .short('n')
-                .long("rename-filename")
-                .multiple_occurrences(false)
-                .help("Rename filenames based on the provided pattern as they are processed.")
-                .takes_value(true)
-        )
-        .get_matches();
+    let cli_args = cli::build().get_matches();
 
     // create a log builder
     let mut logbuilder = Builder::new();
+    let dry_run = cli_args.value_source("dry-run") == Some(ValueSource::CommandLine);
+    let quiet = cli_args.value_source("quiet") == Some(ValueSource::CommandLine);
+    let detail_off = cli_args.value_source("detail-off") == Some(ValueSource::CommandLine);
+    let rename_present = cli_args.value_source("rename") == Some(ValueSource::CommandLine);
 
     // Figure out what log level to use.
-    if cli_args.is_present("quiet") {
+    if quiet {
         logbuilder.filter_level(LevelFilter::Off);
     } else {
-        match cli_args.occurrences_of("debug") {
+        match cli_args.get_count("debug") {
             0 => logbuilder.filter_level(LevelFilter::Info),
             1 => logbuilder.filter_level(LevelFilter::Debug),
             _ => logbuilder.filter_level(LevelFilter::Trace),
@@ -100,34 +44,33 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     // Initialize variables
     let mut tags;
-    let dry_run = cli_args.is_present("dry-run");
 
     // Do the work
-    for filename in cli_args.values_of("read").unwrap() {
-        log::debug!("Processing filename {}", filename);
+    for filename in cli_args.get_many::<String>("files").unwrap_or_default() {
+        log::debug!("Processing filename {filename}");
         let ext = utils::get_extension(filename);
 
         tags = match ext.as_ref() {
             "pdf" => {
-                log::info!("Processing PDF: {}", filename);
+                log::info!("Processing PDF: {filename}");
                 let pdf_m = pdf::get_metadata(filename);
                 if let Ok(pdf_d) = pdf_m {
                     pdf_d
                 } else {
-                    log::error!("Error processing PDF: {}", filename);
+                    log::error!("Error processing PDF: {filename}");
                     continue;
                 }
             }
             "epub" => {
-                log::info!("Processing EPUB: {}", filename);
+                log::info!("Processing EPUB: {filename}");
                 epub::get_metadata(filename)?
             }
             "mobi" => {
-                log::info!("Processing MOBI: {}", filename);
+                log::info!("Processing MOBI: {filename}");
                 mobi::get_metadata(filename)?
             }
             _ => {
-                log::warn!("Unknown file type: {}", filename);
+                log::warn!("Unknown file type: {filename}");
                 crate::utils::new_hashmap()
             }
         };
@@ -137,15 +80,18 @@ fn run() -> Result<(), Box<dyn Error>> {
             utils::get_year(tags.get("Date").unwrap_or(&"".to_string())),
         );
 
-        if !cli_args.is_present("detail-off") && !cli_args.is_present("quiet") {
+        if !detail_off && !quiet {
             utils::print_metadata(&tags);
         }
 
-        if cli_args.is_present("rename") {
-            let pattern = cli_args.value_of("rename").unwrap_or("");
+        if rename_present {
+            let empty_str = String::new();
+            let pattern = cli_args
+                .get_one::<String>("rename-pattern")
+                .unwrap_or(&empty_str);
             let res = rename_file::rename_file(filename, &tags, pattern, dry_run)?;
-            if !cli_args.is_present("quiet") {
-                log::info!("{} --> {}", filename, res);
+            if !quiet {
+                log::info!("{filename} --> {res}");
             }
         }
     }
