@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+### Refector
+
+- PDF update
+
+## [0.3.2] - 2024-01-28
+
 ### Miscellaneous Tasks
 
 - CHANGELOG update
@@ -12,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Refactor
 
 - Remove lints
+- Upgrade to Clap v4
 
 ## [0.3.0] - 2022-05-01
 
