@@ -1,76 +1,43 @@
+use pdf::primitive::PdfString;
 use std::{collections::HashMap, error::Error};
 
-// use pdf::error::PdfError;
-use pdf::file::File;
-// use pdf::object::{FieldDictionary, FieldType, Resolve};
+/// Get the metadata from a PDF file and insert it into the provided hashmap.
+macro_rules! get_field {
+    ($id:ident, $field:ident, $mm:ident, $key:expr) => {
+        let mut $field = <Option<PdfString> as Clone>::clone(&$id.$field)
+            .unwrap_or(PdfString::from(""))
+            .to_string()
+            .unwrap_or(String::from(""));
+        $field = $field.replace('\"', "");
+        $mm.insert($key.to_string(), $field);
+    };
+}
 
 /// get the metadata from a PDF file
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
-    log::debug!("Opening file: {}", filename);
-    let file = match File::<Vec<u8>>::open(filename) {
-        Ok(f) => f,
-        Err(e) => {
-            return Err(format!("Error opening file: {}. Error: {}", filename, e).into());
-        }
+    log::debug!("Opening file: {filename}");
+
+    let file = pdf::file::FileOptions::cached().open(filename)?;
+    let Some(info) = file.trailer.info_dict.as_ref() else {
+        return Err("No info dictionary found in {filename}".into());
     };
 
-    // Read the file. TODO: Make this more robust.
-    let metadata = file.trailer.info_dict.unwrap_or_default();
-
-    log::debug!("metadata = {:?}", metadata);
-
     let mut metadata_map: HashMap<String, String> = HashMap::new();
-    for (key, value) in &metadata {
-        log::debug!("{}: {:?}", key, value);
-        let key_str = key.to_string();
-        let value_str = value.to_string().replace('\"', "");
-        metadata_map.insert(key_str, value_str);
-    }
 
-    if let Some(title) = metadata.get("Title") {
-        log::debug!("title = {:?}", title);
-        metadata_map.insert("Title".to_string(), title.to_string().replace('\"', ""));
+    get_field!(info, author, metadata_map, "Author");
+    get_field!(info, title, metadata_map, "Title");
+    get_field!(info, subject, metadata_map, "Subject");
+    get_field!(info, keywords, metadata_map, "Keywords");
+    get_field!(info, creator, metadata_map, "Creator");
+    get_field!(info, producer, metadata_map, "Producer");
+
+    if let Some(creation_date) = &info.creation_date {
+        metadata_map.insert("Year".to_string(), creation_date.year.to_string());
     } else {
-        log::debug!("No title found in metadata.");
-        metadata_map.insert("Title".to_string(), "".to_string());
+        metadata_map.insert("Year".to_string(), String::new());
     }
 
-    if let Some(author) = metadata.get("Author") {
-        log::debug!("author = {:?}", author);
-        metadata_map.insert("Author".to_string(), author.to_string().replace('\"', ""));
-    } else {
-        log::debug!("No author found in metadata.");
-        metadata_map.insert("Author".to_string(), "".to_string());
-    }
+    log::debug!("metadata_map: {metadata_map:?}");
 
-    if let Some(publisher) = metadata.get("EBX_PUBLISHER") {
-        log::debug!("publisher = {:?}", publisher);
-        metadata_map.insert(
-            "Publisher".to_string(),
-            publisher
-                .to_string()
-                .replace(['\"', '/'], "")
-                .replace("#20", " "),
-        );
-    } else {
-        log::debug!("No publisher found in metadata.");
-        metadata_map.insert("Publisher".to_string(), "".to_string());
-    }
-
-    if let Some(date) = metadata.get("CreationDate") {
-        log::debug!("date = {:?}", date);
-        metadata_map.insert("Date".to_string(), date.to_string().replace('\"', ""));
-    } else {
-        log::debug!("No date found in metadata.");
-        metadata_map.insert("Date".to_string(), "".to_string());
-    }
-
-    log::debug!("metadata_map = {:?}", metadata_map);
-    log::debug!("metadata_map.len() = {}", metadata_map.len());
-    for (key, value) in &metadata_map {
-        log::debug!("{}: {}", key, value);
-    }
-
-    // return safely
     Ok(metadata_map)
 }

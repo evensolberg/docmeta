@@ -37,7 +37,7 @@ pub fn build() -> Command {
             Arg::new("detail-off")
                 .short('o')
                 .long("detail-off")
-                .help("Don't export detailed information about each filename processed.")
+                .help("Don't print detailed information about each filename processed (handy when renaming files).")
                 .num_args(0)
                 .action(ArgAction::SetTrue)
         )
@@ -56,7 +56,7 @@ pub fn build() -> Command {
                 .help("Change filenames based on the provided pattern as they are processed.")
                 .num_args(1)
                 .action(ArgAction::Set)
-                .required(true)
+                .required(false)
                 .hide(false),
         )
 }

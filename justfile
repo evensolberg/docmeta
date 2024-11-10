@@ -14,11 +14,14 @@ alias bra := buildra
 alias fmt := format
 alias r := release
 alias update := upgrade
+alias t := test
+alias tp := testp
 
 # SHORTCUTS AND COMMANDS
 
 # Builds and documents the project - Default; runs if nothing else is specified
-@default: check
+@default:
+    just --list
 
 # Check if it builds at all
 @check: format
@@ -33,7 +36,6 @@ alias update := upgrade
 # Compile a release version of the project without moving the binaries
 @buildr: format changelog
     cargo lbuild --release --color 'always'
-    cargo strip
 
 # Compile a release version of the project for Apple ARM64 without moving the binaries
 @buildra: format changelog
@@ -59,7 +61,7 @@ alias update := upgrade
     -rm bom.txt > /dev/null 2>&1
     -rm tests.txt > /dev/null 2>&1
     -rm tokei.txt > /dev/null 2>&1
-    -rm my_application.log > /dev/null 2>&1
+    -rm {{application}}.log > /dev/null 2>&1
 
 # Rebuilds the changelog
 @cliff: changelog
@@ -67,8 +69,7 @@ alias update := upgrade
 # Documents the project, lints it, builds and installs the release version, and cleans up
 @release: format changelog
     cargo lbuild --release  --color 'always'
-    cargo strip
-    cp {{invocation_directory()}}/target/release/{{application}} /usr/local/bin/
+    -cp {{invocation_directory()}}/target/release/{{application}} /usr/local/bin/
     cargo clean
 
 # Documents the project, builds and installs the release version, and cleans up
@@ -104,11 +105,16 @@ alias update := upgrade
 
 # Formats the project source files
 @format:
-    cargo fmt -- --emit=files
+    cargo fmt -- --emit files
+    # treefmt --config-file="~/CloudStation/source/_Templates/treefmt.toml"
 
 # Tests the project
 @test:
     cargo nextest run
+
+# Tests the project with output
+@testp:
+    cargo nextest run --no-capture
 
 # Checks the project for inefficiencies and bloat
 @inspect: format doc lint spell
@@ -119,39 +125,49 @@ alias update := upgrade
 
 # Checks for potential code improvements
 @lint:
-    cargo lclippy
+    cargo lclippy -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
+
+# Checks for potential code improvements and fixes what it can
+@lintfix:
+    cargo lclippy --fix -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
+
+# Checks for potential code improvements and fixes what it can (allows dirty)
+@lintfixd:
+    cargo lclippy --fix --allow-dirty -- -W clippy::pedantic -W clippy::nursery -W clippy::unwrap_used
 
 # Initialize directory for various services such as cargo deny
 @init:
-    cp ~/CloudStation/Source/_Templates/deny.toml {{invocation_directory()}}/deny.toml
-    cp ~/CloudStation/Source/_Templates/main_template.rs {{invocation_directory()}}/src/main.rs
-    cp ~/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/cliff.toml
-    cargo add clap
-    cargo feature clap +cargo +color
-    cargo add log
-    cargo add env_logger
-    echo "# {{application}}\n\n" > README.md
+    -cp ~/CloudStation/Source/_Templates/deny.toml {{invocation_directory()}}/deny.toml
+    -cp ~/CloudStation/Source/_Templates/main_template.rs {{invocation_directory()}}/src/main.rs
+    -cp ~/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/cliff.toml
+    -cargo add clap --features cargo color
+    -cargo add log
+    -cargo add env_logger
+    -echo "# {{application}}\n\n" > README.md
     -git mit-install
-    git mit-config lint enable subject-line-ends-with-period
-    git mit-config lint enable not-conventional-commit
-    git mit-config mit set es "Even Solberg" even.solberg@gmail.com
-    git mit es
+    -git mit-config lint enable subject-line-not-capitalized
+    -git mit-config lint enable subject-line-ends-with-period
+    -git mit-config lint enable not-conventional-commit
+    -git mit-config lint disable not-emoji-log
+    -git mit-config mit set es "Even Solberg" even.solberg@gmail.com
+    -git mit es
     -git remote add {{application}} https://github.com/evensolberg/{{application}}
-    git add .
-    git commit -m "doc: Initial"
-    git tag Initial
-    git cliff --init
-    cp ~/CloudStation/source/_Templates/cliff.toml {{invocation_directory()}}/
+    -git commit -m doc:Initial
+    -git tag Initial
+    -git cliff --init
+    -cp ~/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/
+    -scaffold add cli
 
 # Re-initialize the directory for various services -- stripped down version of init
 
 @reinit:
+    git mit-install
     git mit-config lint enable subject-line-not-capitalized
     git mit-config lint enable subject-line-ends-with-period
     git mit-config mit set es "Even Solberg" even.solberg@gmail.com
     git mit es
     git cliff --init
-    cp ~/CloudStation/source/_Templates/cliff.toml {{invocation_directory()}}/
+    cp ~/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/
 
 # Read the documentation
 @read:
@@ -181,9 +197,9 @@ alias update := upgrade
 @runddt:
     cargo lrun  --color 'always' -- --debug --debug | tee trace.txt
 
-# Look for spelling mistakes in the code
+# Spellcheck the documents except CHANGELOG
 @spell:
-    typos
+    typos --exclude CHANGELOG.md -c ~/CloudStation/Automation/_typos.toml
 
 # Check for new versions of crates and upgrade accordingly
 @upgrade:
@@ -219,3 +235,22 @@ alias update := upgrade
     -brew install PurpleBooth/repo/git-mit
     -brew install graphviz
     -cp ~/CloudStation/Source/_Templates/deny.toml {{invocation_directory()}}/deny.toml
+
+# Testing actions
+
+# Run the program with a bunch of parameters to test things
+@runit:
+    -rm my_application.log
+    target/debug/my_application \
+        --pfc folder.jpg --pfc Front.jpg \
+        --pbc Back.jpg --pbc Back-Cover.jpg \
+        --psf Artwork --psf "." --psf ".." \
+        --pms 300 \
+        --pf cover-small.jpg --pb back-small.jpg  \
+        -l my_application/debug.yaml \
+        music/01-13\ Surf\'s\ Up.flac \
+        -r
+
+# Report on code coverage
+@tarp:
+    cargo tarpaulin
