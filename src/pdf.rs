@@ -34,7 +34,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
     if let Some(creation_date) = &info.creation_date {
         metadata_map.insert("Year".to_string(), creation_date.year.to_string());
     } else {
-        metadata_map.insert("Year".to_string(), "Unknown".to_string());
+        metadata_map.insert("Year".to_string(), String::new());
     }
 
     log::debug!("metadata_map: {metadata_map:?}");

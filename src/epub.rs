@@ -3,7 +3,7 @@ use std::{collections::HashMap, error::Error};
 
 use epub::doc::EpubDoc;
 
-/// Get the metadata of an EPUB file and return it as a HashMap.
+/// Get the metadata of an EPUB file and return it as a `HashMap`.
 ///
 /// # Arguments
 ///
@@ -11,8 +11,8 @@ use epub::doc::EpubDoc;
 ///
 /// # Returns
 ///
-/// A Result containing a HashMap with the metadata of the EPUB file.
-/// The HashMap contains the following keys:
+/// A Result containing a `HashMap` with the metadata of the EPUB file.
+/// The `HashMap` contains the following keys:
 ///
 /// * `title` - The title of the EPUB file.
 /// * `author` - The author of the EPUB file.
@@ -47,7 +47,6 @@ use epub::doc::EpubDoc;
 /// a Box<dyn Error> will be returned.
 /// If the metadata is not found, a Box<dyn Error> will be returned.
 /// If the metadata is not found, the value will be set to "Unknown".
-
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let doc = EpubDoc::new(filename)?;
     let metadata = doc.metadata;
@@ -69,17 +68,11 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
             log::debug!("{key} = {value:?}");
             metadata_map.insert(
                 key.to_string().to_case(Case::Title),
-                value
-                    .first()
-                    .unwrap_or(&String::from("Unknown"))
-                    .to_string(),
+                value.first().unwrap_or(&String::new()).to_string(),
             );
         } else {
             log::debug!("No {key} found in metadata.");
-            metadata_map.insert(
-                key.to_string().to_case(Case::Title),
-                String::from("Unknown"),
-            );
+            metadata_map.insert(key.to_string().to_case(Case::Title), String::new());
         }
     }
 

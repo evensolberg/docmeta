@@ -11,29 +11,23 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
     metadata_map.insert("Title".to_string(), mobi_file.title());
     metadata_map.insert(
         "Author".to_string(),
-        mobi_file.author().unwrap_or_else(|| "Unknown".to_string()),
+        mobi_file.author().unwrap_or_else(String::new),
     );
     metadata_map.insert(
         "Description".to_string(),
-        mobi_file
-            .description()
-            .unwrap_or_else(|| "Unknown".to_string()),
+        mobi_file.description().unwrap_or_else(String::new),
     );
     metadata_map.insert(
         "Publisher".to_string(),
-        mobi_file
-            .publisher()
-            .unwrap_or_else(|| "Unknown".to_string()),
+        mobi_file.publisher().unwrap_or_else(String::new),
     );
     metadata_map.insert(
         "Identifier".to_string(),
-        mobi_file.isbn().unwrap_or_else(|| "Unknown".to_string()),
+        mobi_file.isbn().unwrap_or_else(String::new),
     );
     metadata_map.insert(
         "Date".to_string(),
-        mobi_file
-            .publish_date()
-            .unwrap_or_else(|| "Unknown".to_string()),
+        mobi_file.publish_date().unwrap_or_else(String::new),
     );
 
     log::debug!("metadata_map = {metadata_map:?}");

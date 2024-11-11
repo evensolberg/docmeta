@@ -1,6 +1,6 @@
 [package]
 name = "docmeta"
-version = "0.3.4"
+version = "0.3.5"
 authors = ["Even Solberg"]
 edition = "2021"
 include = ["src/main.rs", "README.md"]
