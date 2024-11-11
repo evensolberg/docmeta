@@ -167,7 +167,7 @@ alias tp := testp
     git mit-config mit set es "Even Solberg" even.solberg@gmail.com
     git mit es
     git cliff --init
-    cp ~/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/
+    cp /Volumes/SSD/CloudStation/Source/_Templates/cliff.toml {{invocation_directory()}}/
 
 # Read the documentation
 @read:
