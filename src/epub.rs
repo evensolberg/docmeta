@@ -3,6 +3,27 @@ use std::{collections::HashMap, error::Error};
 
 use epub::doc::EpubDoc;
 
+macro_rules! insert_metadata {
+    ($metadata_map:expr, $metadata:expr, $key:expr) => {
+        if let Some(value) = $metadata.get($key) {
+            log::debug!("{} = {value:?}", $key);
+            $metadata_map.insert(
+                $key.to_string().to_case(Case::Title),
+                value
+                    .first()
+                    .unwrap_or(&String::from("Unknown"))
+                    .to_string(),
+            );
+        } else {
+            log::debug!("No {} found in metadata.", $key);
+            $metadata_map.insert(
+                $key.to_string().to_case(Case::Title),
+                String::from("Unknown"),
+            );
+        }
+    };
+}
+
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let doc = EpubDoc::new(filename)?;
     let metadata = doc.metadata;
@@ -37,6 +58,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
             );
         }
     }
+
 
     // return the metadata
     log::debug!("metadata_map = {metadata_map:?}");

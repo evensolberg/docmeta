@@ -204,7 +204,7 @@ alias tp := testp
 # Check for new versions of crates and upgrade accordingly
 @upgrade:
     cargo update
-    cargo upgrade
+    cargo upgrade --workspace
 
 # Copy this settings files to the templates directory
 @just:

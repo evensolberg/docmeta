@@ -12,7 +12,7 @@ Arguments:
 
 Options:
   -q, --quiet                         Don't produce any output except errors while working.
-  -o, --detail-off                    Don't export detailed information about each filename processed.
+  -o, --detail-off                    Don't print metadata detailed information about each filename processed (handy when renaming).
   -r, --dry-run                       Performs a dry-run without executing any actual changes.
   -n, --rename-file <rename-pattern>  Change filenames based on the provided pattern as they are processed.
   -h, --help                          Print help (see more with '--help')
