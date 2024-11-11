@@ -13,21 +13,22 @@ pub fn get_extension(filename: &str) -> String {
 }
 
 /// Get the year from a date string
-// TODO: Make this more robust
 pub fn get_year(date: &str) -> String {
-    log::debug!("date = {}", date);
+    // If it's already a year, just return it
+    if date.len() == 4 && date.chars().all(char::is_numeric) {
+        return date.to_string();
+    }
+
     let year = if date.starts_with("D:") {
         let subdate = date.split(':').nth(1).unwrap_or("").to_string();
         subdate[0..4].to_string()
-    } else {
+    } else if date.contains('-') {
         date.split('-').next().unwrap_or("").to_string()
+    } else {
+        date.to_string()
     };
 
-    let return_year = year.trim().to_string();
-    log::debug!("return_year = {:?}", return_year);
-
-    // return it
-    return_year
+    year.trim().to_string()
 }
 
 /// Print the metadata
@@ -35,9 +36,9 @@ pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
     if !tags.is_empty() {
         for (key, value) in tags {
             if value.is_empty() {
-                println!("{}: N/A", key);
+                println!("{key}: N/A");
             } else {
-                println!("{}: {}", key, value);
+                println!("{key}: {value}");
             }
         }
     }
@@ -51,9 +52,8 @@ pub fn new_hashmap() -> std::collections::HashMap<String, String> {
 ///
 mod tests {
     use super::*;
-    use assay::assay;
 
-    #[assay]
+    #[test]
     /// Test the get_year function
     fn test_get_year() {
         assert_eq!(get_year("2020-01-01"), "2020");
