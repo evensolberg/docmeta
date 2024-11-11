@@ -5,7 +5,7 @@ use std::path::Path;
 pub fn get_extension(filename: &str) -> String {
     Path::new(&filename)
         .extension()
-        .unwrap_or_else(|| OsStr::new("unknown"))
+        .unwrap_or_else(|| OsStr::new(""))
         .to_ascii_lowercase()
         .to_str()
         .unwrap_or("")
@@ -54,10 +54,21 @@ mod tests {
     use super::*;
 
     #[test]
-    /// Test the get_year function
+    /// Test the `get_year` function
     fn test_get_year() {
         assert_eq!(get_year("2020-01-01"), "2020");
         assert_eq!(get_year("2011-03-15T04:00:00+00:00"), "2011");
         assert_eq!(get_year("2020-02-07"), "2020");
+        assert_eq!(get_year("D:20200207123456+00'00'"), "2020");
+        assert_eq!(get_year("2024"), "2024");
+    }
+
+    #[test]
+    fn test_get_extension() {
+        assert_eq!(get_extension("file.txt"), "txt");
+        assert_eq!(get_extension("image.jpg"), "jpg");
+        assert_eq!(get_extension("document.pdf"), "pdf");
+        assert_eq!(get_extension("document.xyz.pdf"), "pdf");
+        assert_eq!(get_extension("no_extension"), "");
     }
 }

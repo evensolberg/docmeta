@@ -21,7 +21,6 @@ use std::{
 ///
 /// - The new file name if successful
 /// - An error message if unsuccessful.
-
 pub fn rename_file(
     filename: &str,
     tags: &HashMap<String, String>,

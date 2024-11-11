@@ -20,7 +20,8 @@ alias tp := testp
 # SHORTCUTS AND COMMANDS
 
 # Builds and documents the project - Default; runs if nothing else is specified
-@default: check
+@default:
+    just --list
 
 # Check if it builds at all
 @check: format
@@ -104,7 +105,8 @@ alias tp := testp
 
 # Formats the project source files
 @format:
-    cargo fmt -- --emit=files
+    cargo fmt -- --emit files
+    # treefmt --config-file="~/CloudStation/source/_Templates/treefmt.toml"
 
 # Tests the project
 @test:
