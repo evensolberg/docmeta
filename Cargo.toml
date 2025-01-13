@@ -10,7 +10,7 @@ description = "A command line tool for displaying metadata in ebooks and renamin
 
 [dependencies]
 clap = { version = "4.5.20", features = ["cargo", "color"] }
-convert_case = "0.6.0"
+convert_case = "0.7.1"
 env_logger = "0.11.5"
 epub = "2.1.2"
 log = "0.4.22"
