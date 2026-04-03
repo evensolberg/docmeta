@@ -59,30 +59,28 @@ pub fn rename_file(
         return Err("No new filename generated".into());
     }
 
-    // Create the new filename
-    let mut new_path = Path::new(&new_filename).with_extension(utils::get_extension(filename));
-    log::debug!("new_path = {}", new_path.display());
-
-    // Return if the new filename is the same as the old
-    let np = new_path.to_string_lossy().to_string();
-    if np == *filename {
-        log::debug!("New filename == old filename. Returning.");
-        return Ok(np);
-    }
-
     // Get the path in front of the filename (eg. "books/book.pdf" returns "books/")
     let parent = Path::new(&filename)
         .parent()
         .unwrap_or_else(|| Path::new("."));
     log::debug!("parent = {}", parent.display());
 
-    // Check if a file with the new filename already exists - make the filename unique if it does.
-    if Path::new(&new_path).exists() {
-        log::warn!("{new_filename} already exists. Appending unique identifier.");
-        new_filename = format!("{new_filename} ({:0>4})", get_unique_value());
+    // Create the full destination path, including the source file's parent directory
+    let mut new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    log::debug!("new_path = {}", new_path.display());
+
+    // Return if the new filename is the same as the old
+    if new_path.to_string_lossy() == *filename {
+        log::debug!("New filename == old filename. Returning.");
+        return Ok(new_path.to_string_lossy().into_owned());
     }
 
-    new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    // Check if a file with the new filename already exists - make the filename unique if it does.
+    if new_path.exists() {
+        log::warn!("{new_filename} already exists. Appending unique identifier.");
+        new_filename = format!("{new_filename} ({:0>4})", get_unique_value());
+        new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    }
 
     // Perform the actual rename and check the outcome
     if dry_run {
