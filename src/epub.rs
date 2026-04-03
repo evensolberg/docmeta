@@ -29,7 +29,7 @@ use epub::doc::EpubDoc;
 ///
 /// ```ignore
 /// use std::collections::HashMap;
-/// use epub_metadata::get_metadata;
+/// use docmeta::epub::get_metadata;
 /// let metadata = get_metadata("tests/test.epub").unwrap();
 /// let mut expected_metadata: HashMap<String, String> = HashMap::new();
 /// expected_metadata.insert("Title".to_string(), "The Title".to_string());
