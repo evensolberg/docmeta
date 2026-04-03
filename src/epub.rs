@@ -49,8 +49,7 @@ use epub::doc::EpubDoc;
 /// If the metadata is not found, the value will be set to "Unknown".
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let doc = EpubDoc::new(filename)?;
-    let metadata = doc.metadata;
-    log::debug!("metadata = {metadata:?}");
+    log::debug!("metadata = {:?}", doc.metadata);
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();
 
@@ -63,13 +62,11 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         "language",
         "identifier",
     ];
+
     for key in keys {
-        if let Some(value) = metadata.get(key) {
-            log::debug!("{key} = {value:?}");
-            metadata_map.insert(
-                key.to_string().to_case(Case::Title),
-                value.first().unwrap_or(&String::new()).to_string(),
-            );
+        if let Some(item) = doc.mdata(key) {
+            log::debug!("{key} = {:?}", item.value);
+            metadata_map.insert(key.to_string().to_case(Case::Title), item.value.clone());
         } else {
             log::debug!("No {key} found in metadata.");
             metadata_map.insert(key.to_string().to_case(Case::Title), String::new());
