@@ -49,7 +49,6 @@ pub fn new_hashmap() -> std::collections::HashMap<String, String> {
 }
 
 #[cfg(test)]
-///
 mod tests {
     use super::*;
 
