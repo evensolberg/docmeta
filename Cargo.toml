@@ -2,7 +2,8 @@
 name = "docmeta"
 version = "0.4.0"
 authors = ["Even Solberg"]
-edition = "2021"
+edition = "2024"
+rust-version = "1.85"
 description = "A command line tool for displaying metadata in ebooks and renaming the files based on the metadata."
 exclude = ["tests/fixtures/**"]
 
