@@ -6,7 +6,7 @@ use std::{collections::HashMap, error::Error};
 /// Falls back to `"Unknown"` when the field is absent or cannot be converted to a
 /// UTF-8 string, and strips any embedded double-quote characters from the value.
 macro_rules! get_field {
-    ($id:ident, $field:ident, $mm:ident, $key:expr) => {
+    ($id:ident, $field:ident, $mm:ident, $key:expr_2021) => {
         let mut $field = <Option<PdfString> as Clone>::clone(&$id.$field)
             .unwrap_or(PdfString::from("Unknown"))
             .to_string()

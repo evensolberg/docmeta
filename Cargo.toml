@@ -2,7 +2,7 @@
 name = "docmeta"
 version = "0.3.6"
 authors = ["Even Solberg"]
-edition = "2021"
+edition = "2024"
 include = ["src/main.rs", "README.md"]
 description = "A command line tool for displaying metadata in ebooks and renaming the files based on the metadata."
 
