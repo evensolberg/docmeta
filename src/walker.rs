@@ -14,8 +14,9 @@ const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 /// - **Directory** with `recursive = false`: skipped with a warning.
 /// - Anything that cannot be stat'd (does not exist, permission denied, etc.): skipped with a warning.
 ///
-/// The returned list preserves the encounter order (files before directory
-/// contents, directory contents in `WalkDir` order).
+/// The returned list follows the order of `inputs`: each input's contribution
+/// (the path itself for files, or the sorted directory contents for directories)
+/// is appended when that input is encountered.
 pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
     let mut result = Vec::new();
 
@@ -36,6 +37,8 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
                 continue;
             }
             for entry in WalkDir::new(input)
+                .follow_links(true)
+                .sort_by_file_name()
                 .into_iter()
                 .filter_map(|e| match e {
                     Ok(entry) => Some(entry),
