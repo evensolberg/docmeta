@@ -1,7 +1,18 @@
 //! Contains a single function to build the CLI
 use clap::{Arg, ArgAction, Command};
 
-/// Builds the CLI so the main file doesn't get cluttered.
+/// Build and return the top-level [`Command`] for the application.
+///
+/// Keeps argument definitions out of `main.rs`. The returned command accepts:
+///
+/// | Flag / Argument | Short | Description |
+/// |-----------------|-------|-------------|
+/// | `<filename(s)>` | — | One or more files to process (required) |
+/// | `--debug` | `-d` | Enable debug logging; repeat for trace level (hidden) |
+/// | `--quiet` | `-q` | Suppress all output except errors |
+/// | `--detail-off` | `-o` | Skip per-file metadata output (useful when renaming) |
+/// | `--dry-run` | `-r` | Show what would happen without making changes |
+/// | `--rename-file <pattern>` | `-n` | Rename each file using `<pattern>` as the template |
 pub fn build() -> Command {
     Command::new(clap::crate_name!())
         .about(clap::crate_description!())
