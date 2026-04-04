@@ -11,11 +11,11 @@ use std::{
 /// **Parameters:**
 ///
 /// - `filename: &str` -- the name of the file to be renamed
-/// - `tags: &HashMap<String, String>` -- The various tag values (ie. Album Artist, Genre, etc.)
+/// - `tags: &HashMap<String, String>` -- The metadata values (e.g. Title, Author, Year, Publisher).
 /// - `pattern: &str` -- the tag pattern for the new filename. This has been validated to be OK by the CLI.
-/// - `config: &DefaultValues` -- The tags that have been set, and any config settings such as dry-run.
+/// - `dry_run: bool` -- if `true`, log what would happen but do not rename the file.
 ///
-/// Note that you'll need to populate the tags struct _before_ using this function. This is to avoid having to re-open the file and re-read the data.
+/// Note that you'll need to populate the tags map _before_ using this function. This is to avoid having to re-open the file and re-read the data.
 ///
 /// **Returns**
 ///
