@@ -20,6 +20,7 @@ use std::{collections::HashMap, error::Error};
 /// | `"Publisher"` | Publisher name, or empty string if absent |
 /// | `"Identifier"` | ISBN, or empty string if absent |
 /// | `"Date"` | Publish date string, or empty string if absent |
+/// | `"Year"` | Four-digit year extracted from `Date`, or empty string if absent |
 ///
 /// # Errors
 ///
@@ -69,6 +70,6 @@ mod tests {
     #[test]
     fn get_metadata_includes_year_key() {
         let map = get_metadata("tests/fixtures/Mastering.mobi").expect("should parse");
-        assert!(map.contains_key("Year"), "Year key missing from mobi metadata");
+        assert_eq!(map.get("Year").map(String::as_str), Some("2019"), "unexpected Year value");
     }
 }

@@ -4,10 +4,6 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
-### Fixed
-
-- `get_year` no longer panics on short or empty `D:`-prefixed PDF date strings (#13)
-
 ### Refactor
 
 - PDF crate update (#6)
