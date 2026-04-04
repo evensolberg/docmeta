@@ -1,3 +1,4 @@
+use crate::utils;
 use convert_case::{Case, Casing};
 use std::{collections::HashMap, error::Error};
 
@@ -71,7 +72,22 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         }
     }
 
+    // Extract year from the date string and store it alongside
+    let date = metadata_map.get("Date").map_or("", String::as_str).to_owned();
+    metadata_map.insert("Year".to_string(), utils::get_year(&date));
+
     // return the metadata
     log::debug!("metadata_map = {metadata_map:?}");
     Ok(metadata_map)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_metadata_includes_year_key() {
+        let map = get_metadata("tests/fixtures/Mastering.epub").expect("should parse");
+        assert!(map.contains_key("Year"), "Year key missing from epub metadata");
+    }
 }

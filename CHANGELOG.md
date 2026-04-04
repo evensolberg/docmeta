@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Refactor
 
 - PDF crate update (#6)
+- EPUB and MOBI modules now extract `Year` internally; `main` no longer needs format-specific date logic
+- `get_year` simplified — the `D:`-prefix PDF date branch was dead code (PDF module uses native date parsing)
 
 ## [0.3.2] - 2024-01-28
 

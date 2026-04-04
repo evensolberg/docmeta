@@ -79,13 +79,6 @@ fn run() -> Result<(), Box<dyn Error>> {
         };
 
         log::debug!("tags: {tags:?}");
-        if tags.contains_key("Date") {
-            tags.insert(
-                "Year".to_string(),
-                utils::get_year(tags.get("Date").unwrap_or(&String::new())),
-            );
-        }
-
         if !detail_off && !quiet {
             utils::print_metadata(&tags);
         }
