@@ -74,7 +74,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             }
             _ => {
                 log::warn!("Unknown file type: {filename}");
-                crate::utils::new_hashmap()
+                std::collections::HashMap::new()
             }
         };
 

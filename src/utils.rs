@@ -20,8 +20,8 @@ pub fn get_year(date: &str) -> String {
     }
 
     let year = if date.starts_with("D:") {
-        let subdate = date.split(':').nth(1).unwrap_or("").to_string();
-        subdate[0..4].to_string()
+        let subdate = date.strip_prefix("D:").unwrap_or("");
+        subdate.get(0..4).unwrap_or("").to_string()
     } else if date.contains('-') {
         date.split('-').next().unwrap_or("").to_string()
     } else {
@@ -33,19 +33,13 @@ pub fn get_year(date: &str) -> String {
 
 /// Print the metadata
 pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
-    if !tags.is_empty() {
-        for (key, value) in tags {
-            if value.is_empty() {
-                println!("{key}: N/A");
-            } else {
-                println!("{key}: {value}");
-            }
+    for (key, value) in tags {
+        if value.is_empty() {
+            println!("{key}: N/A");
+        } else {
+            println!("{key}: {value}");
         }
     }
-}
-
-pub fn new_hashmap() -> std::collections::HashMap<String, String> {
-    std::collections::HashMap::new()
 }
 
 #[cfg(test)]
@@ -53,13 +47,22 @@ mod tests {
     use super::*;
 
     #[test]
-    /// Test the `get_year` function
+    // Test the `get_year` function
     fn test_get_year() {
         assert_eq!(get_year("2020-01-01"), "2020");
         assert_eq!(get_year("2011-03-15T04:00:00+00:00"), "2011");
         assert_eq!(get_year("2020-02-07"), "2020");
         assert_eq!(get_year("D:20200207123456+00'00'"), "2020");
+        assert_eq!(get_year("D:20230101000000+05:30"), "2023");
         assert_eq!(get_year("2024"), "2024");
+    }
+
+    #[test]
+    fn test_get_year_edge_cases() {
+        assert_eq!(get_year("D:"), "");
+        assert_eq!(get_year("D:202"), "");
+        assert_eq!(get_year(""), "");
+        assert_eq!(get_year("unknown"), "unknown");
     }
 
     #[test]
