@@ -47,10 +47,15 @@ pub fn rename_file(
     );
     new_filename = new_filename.replace("%y", tags.get("Year").map_or("Unknown", String::as_str));
 
-    // Fix a few things we know will give us trouble later.
+    // Semantic replacements: preserve readability where possible.
     new_filename = new_filename.replace('/', "-");
+    new_filename = new_filename.replace('\\', "-");
     new_filename = new_filename.replace(':', " -");
     new_filename = new_filename.replace('.', "");
+
+    // Strip characters forbidden on Windows or universally invalid in filenames
+    // (e.g. NUL is rejected by every OS).
+    new_filename.retain(|ch| !matches!(ch, '*' | '?' | '"' | '<' | '>' | '|' | '\0'));
 
     // Remove leading or trailing spaces
     new_filename = new_filename.trim().to_string();
@@ -203,6 +208,37 @@ mod tests {
         let t = tags(&[("Title", "Mr. Smith")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
         assert!(result.contains("Mr Smith"), "dot not removed: {result}");
+    }
+
+    #[test]
+    fn backslash_in_tag_is_replaced_with_dash() {
+        let t = tags(&[("Title", r"A\B")]);
+        let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
+        assert!(result.contains("A-B"), "backslash not sanitised: {result}");
+    }
+
+    #[test]
+    fn windows_forbidden_chars_are_removed() {
+        // * ? " < > | are forbidden on Windows
+        let t = tags(&[("Title", "A*B?C\"D<E>F|G")]);
+        let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
+        assert!(result.contains("ABCDEFG"), "forbidden chars not removed: {result}");
+    }
+
+    #[test]
+    fn pattern_of_only_forbidden_chars_returns_error() {
+        // After stripping forbidden chars the stem is empty → error
+        let result = rename_file("placeholder.epub", &tags(&[]), "*<>", false);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "No new filename generated");
+    }
+
+    #[test]
+    fn nul_byte_in_tag_is_removed() {
+        let t = tags(&[("Title", "A\0B")]);
+        let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
+        assert!(result.contains("AB"), "NUL byte not removed: {result}");
+        assert!(!result.contains('\0'), "NUL byte present in result: {result}");
     }
 
     // ── dry run ──────────────────────────────────────────────────────────────
