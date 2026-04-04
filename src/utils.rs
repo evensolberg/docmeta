@@ -33,27 +33,22 @@ pub fn get_year(date: &str) -> String {
 
 /// Print the metadata
 pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
-    if !tags.is_empty() {
-        for (key, value) in tags {
-            if value.is_empty() {
-                println!("{key}: N/A");
-            } else {
-                println!("{key}: {value}");
-            }
+    for (key, value) in tags {
+        if value.is_empty() {
+            println!("{key}: N/A");
+        } else {
+            println!("{key}: {value}");
         }
     }
 }
 
-pub fn new_hashmap() -> std::collections::HashMap<String, String> {
-    std::collections::HashMap::new()
-}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    /// Test the `get_year` function
+    // Test the `get_year` function
     fn test_get_year() {
         assert_eq!(get_year("2020-01-01"), "2020");
         assert_eq!(get_year("2011-03-15T04:00:00+00:00"), "2011");
@@ -64,13 +59,9 @@ mod tests {
 
     #[test]
     fn test_get_year_edge_cases() {
-        // "D:" with nothing after the colon — split yields "", should not panic
         assert_eq!(get_year("D:"), "");
-        // "D:" with fewer than 4 digits after the colon
         assert_eq!(get_year("D:202"), "");
-        // empty string
         assert_eq!(get_year(""), "");
-        // non-numeric, non-date garbage
         assert_eq!(get_year("unknown"), "unknown");
     }
 
