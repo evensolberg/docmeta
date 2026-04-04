@@ -34,7 +34,13 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
             }
             for entry in WalkDir::new(input)
                 .into_iter()
-                .filter_map(std::result::Result::ok)
+                .filter_map(|e| match e {
+                    Ok(entry) => Some(entry),
+                    Err(err) => {
+                        log::warn!("Skipping entry: {err}");
+                        None
+                    }
+                })
                 .filter(|e| e.file_type().is_file())
             {
                 let path_str = entry.path().to_string_lossy();
@@ -63,6 +69,23 @@ mod tests {
     }
 
     // ── plain file inputs ────────────────────────────────────────────────────
+
+    #[test]
+    fn unsupported_extension_file_is_still_passed_through() {
+        // Extension filtering only applies inside directories; a file given
+        // directly on the CLI is always included regardless of its extension.
+        let dir = tempdir().expect("temp dir");
+        let file = dir.path().join("notes.txt");
+        fs::write(&file, b"").expect("write");
+        let path = file.to_string_lossy().to_string();
+
+        let result = collect_files(std::slice::from_ref(&path), false);
+        assert_eq!(
+            result,
+            vec![path],
+            "unsupported-extension file should pass through"
+        );
+    }
 
     #[test]
     fn single_file_is_returned_as_is() {
