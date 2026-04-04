@@ -1,7 +1,15 @@
 use std::ffi::OsStr;
 use std::path::Path;
 
-/// Get the extension part of the filename and return it as a string
+/// Return the lowercase file extension of `filename`, or an empty string if there is none.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_eq!(get_extension("book.epub"), "epub");
+/// assert_eq!(get_extension("archive.tar.gz"), "gz");
+/// assert_eq!(get_extension("README"), "");
+/// ```
 pub fn get_extension(filename: &str) -> String {
     Path::new(&filename)
         .extension()
@@ -12,7 +20,26 @@ pub fn get_extension(filename: &str) -> String {
         .to_string()
 }
 
-/// Get the year from a date string
+/// Extract the four-digit year from a date string.
+///
+/// Handles three common formats:
+///
+/// - A bare four-digit year (`"2024"`) is returned as-is.
+/// - A PDF date string prefixed with `"D:"` (e.g. `"D:20240101120000+00'00'"`) — the four
+///   digits immediately after the prefix are returned.
+/// - An ISO 8601 / hyphen-separated date (e.g. `"2024-01-01"`) — the part before the first
+///   hyphen is returned.
+///
+/// Returns an empty string when the year cannot be determined.
+///
+/// # Examples
+///
+/// ```ignore
+/// assert_eq!(get_year("2024-06-15"), "2024");
+/// assert_eq!(get_year("D:20240615120000+00'00'"), "2024");
+/// assert_eq!(get_year("2024"), "2024");
+/// assert_eq!(get_year("D:"), "");
+/// ```
 pub fn get_year(date: &str) -> String {
     // If it's already a year, just return it
     if date.len() == 4 && date.chars().all(char::is_numeric) {
@@ -31,7 +58,9 @@ pub fn get_year(date: &str) -> String {
     year.trim().to_string()
 }
 
-/// Print the metadata
+/// Print each metadata key/value pair to stdout.
+///
+/// Empty values are displayed as `"N/A"` rather than a blank.
 pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
     for (key, value) in tags {
         if value.is_empty() {

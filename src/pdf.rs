@@ -1,7 +1,10 @@
 use pdf::primitive::PdfString;
 use std::{collections::HashMap, error::Error};
 
-/// Get the metadata from a PDF file and insert it into the provided hashmap.
+/// Extract a named field from a PDF info dictionary into `$mm`.
+///
+/// Falls back to `"Unknown"` when the field is absent or cannot be converted to a
+/// UTF-8 string, and strips any embedded double-quote characters from the value.
 macro_rules! get_field {
     ($id:ident, $field:ident, $mm:ident, $key:expr) => {
         let mut $field = <Option<PdfString> as Clone>::clone(&$id.$field)
@@ -13,7 +16,32 @@ macro_rules! get_field {
     };
 }
 
-/// get the metadata from a PDF file
+/// Read metadata from a PDF file and return it as a [`HashMap`].
+///
+/// # Arguments
+///
+/// * `filename` - Path to the PDF file to read.
+///
+/// # Returns
+///
+/// A [`HashMap`] containing the following keys (all `String` values):
+///
+/// | Key | Source field |
+/// |-----|-------------|
+/// | `"Author"` | `info.author` |
+/// | `"Title"` | `info.title` |
+/// | `"Subject"` | `info.subject` |
+/// | `"Keywords"` | `info.keywords` |
+/// | `"Creator"` | `info.creator` |
+/// | `"Producer"` | `info.producer` |
+/// | `"Year"` | `info.creation_date.year` |
+///
+/// Fields absent from the PDF info dictionary are inserted with the value `"Unknown"`,
+/// except `"Year"` which is inserted as an empty string when the creation date is missing.
+///
+/// # Errors
+///
+/// Returns `Err` if the file cannot be opened or if the PDF has no info dictionary.
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     log::debug!("Opening file: {filename}");
 

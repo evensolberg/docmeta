@@ -2,6 +2,28 @@ use mobi::Mobi;
 
 use std::{collections::HashMap, error::Error};
 
+/// Read metadata from a MOBI file and return it as a [`HashMap`].
+///
+/// # Arguments
+///
+/// * `filename` - Path to the MOBI file to read.
+///
+/// # Returns
+///
+/// A [`HashMap`] containing the following keys (all `String` values):
+///
+/// | Key | Source field |
+/// |-----|-------------|
+/// | `"Title"` | Book title |
+/// | `"Author"` | Author name, or empty string if absent |
+/// | `"Description"` | Book description, or empty string if absent |
+/// | `"Publisher"` | Publisher name, or empty string if absent |
+/// | `"Identifier"` | ISBN, or empty string if absent |
+/// | `"Date"` | Publish date string, or empty string if absent |
+///
+/// # Errors
+///
+/// Returns `Err` if the file cannot be opened or parsed as a MOBI document.
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let mobi_file = Mobi::from_path(filename)?;
     log::debug!("metadata = {:?}", mobi_file.metadata);
