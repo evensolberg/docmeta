@@ -7,11 +7,12 @@ use clap::{Arg, ArgAction, Command};
 ///
 /// | Flag / Argument | Short | Description |
 /// |-----------------|-------|-------------|
-/// | `<filename(s)>` | — | One or more files to process (required) |
+/// | `<filename(s)>` | — | One or more files or directories to process (required) |
 /// | `--debug` | `-d` | Enable debug logging; repeat for trace level (hidden) |
 /// | `--quiet` | `-q` | Suppress all output except errors |
 /// | `--detail-off` | `-o` | Skip per-file metadata output (useful when renaming) |
 /// | `--dry-run` | `-r` | Show what would happen without making changes |
+/// | `--recursive` | `-R` | Recurse into directories, processing all supported files |
 /// | `--rename-file <pattern>` | `-n` | Rename each file using `<pattern>` as the template |
 pub fn build() -> Command {
     Command::new(clap::crate_name!())
@@ -59,6 +60,14 @@ pub fn build() -> Command {
                 .help("Performs a dry-run without executing any actual changes.")
                 .num_args(0)
                 .action(ArgAction::SetTrue)
+        )
+        .arg(
+            Arg::new("recursive")
+                .short('R')
+                .long("recursive")
+                .help("Recurse into directories and process all supported ebook files found.")
+                .num_args(0)
+                .action(ArgAction::SetTrue),
         )
         .arg( // Rename filenames
             Arg::new("rename-pattern")

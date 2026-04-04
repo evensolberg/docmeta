@@ -12,6 +12,7 @@ mod mobi;
 mod pdf;
 mod rename_file;
 mod utils;
+mod walker;
 
 // Useful stuff
 
@@ -28,6 +29,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let dry_run = cli_args.get_flag("dry-run");
     let quiet = cli_args.get_flag("quiet");
     let detail_off = cli_args.get_flag("detail-off");
+    let recursive = cli_args.get_flag("recursive");
     let rename_present = cli_args.value_source("rename-pattern") == Some(ValueSource::CommandLine);
 
     // Figure out what log level to use.
@@ -44,11 +46,19 @@ fn run() -> Result<(), Box<dyn Error>> {
     // Initialize logging
     logbuilder.target(Target::Stdout).init();
 
+    // Expand inputs — directories are walked when --recursive is set
+    let raw_inputs: Vec<String> = cli_args
+        .get_many::<String>("read")
+        .unwrap_or_default()
+        .cloned()
+        .collect();
+    let files = walker::collect_files(&raw_inputs, recursive);
+
     // Initialize variables
     let mut tags;
 
     // Do the work
-    for filename in cli_args.get_many::<String>("read").unwrap_or_default() {
+    for filename in &files {
         log::debug!("Processing filename {filename}");
         let ext = utils::get_extension(filename);
 
