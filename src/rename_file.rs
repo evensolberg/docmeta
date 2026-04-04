@@ -102,7 +102,7 @@ pub fn rename_file(
                     "Unable to rename {filename} to {}. Error message: {err}",
                     new_path.to_string_lossy(),
                 )
-                .into())
+                .into());
             }
         }
     }
