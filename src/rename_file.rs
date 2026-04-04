@@ -218,8 +218,7 @@ mod tests {
         // Source still exists
         assert!(fs::metadata(&src_path).is_ok(), "source was deleted in dry-run");
         // Destination (result path) does not exist
-        assert!(!fs::metadata(&result).is_ok() || result == src_path,
-            "destination was created in dry-run");
+        assert!(fs::metadata(&result).is_err(), "destination was created in dry-run");
     }
 
     // ── actual rename ────────────────────────────────────────────────────────
@@ -234,7 +233,7 @@ mod tests {
         let t = tags(&[("Title", "RenamedFile")]);
         let result = rename_file(&src_str, &t, "%t", false).expect("rename should succeed");
 
-        assert!(!fs::metadata(&src_str).is_ok(), "source still exists after rename");
+        assert!(fs::metadata(&src_str).is_err(), "source still exists after rename");
         assert!(fs::metadata(&result).is_ok(), "destination does not exist after rename");
     }
 
