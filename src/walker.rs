@@ -236,4 +236,57 @@ mod tests {
         let result = collect_files(&[dir_path], true);
         assert_eq!(result.len(), 1, "expected 1 file; got {result:?}");
     }
+
+    // ── traversal order ──────────────────────────────────────────────────────
+
+    #[test]
+    fn directory_contents_returned_in_alphabetical_order() {
+        // Verifies that sort_by_file_name() is in effect: files within a
+        // directory must come back sorted regardless of creation order.
+        let dir = tempdir().expect("temp dir");
+        fs::write(dir.path().join("c.epub"), b"").expect("write c");
+        fs::write(dir.path().join("a.epub"), b"").expect("write a");
+        fs::write(dir.path().join("b.pdf"), b"").expect("write b");
+
+        let dir_path = dir.path().to_string_lossy().to_string();
+        let result = collect_files(&[dir_path.clone()], true);
+
+        let expected = vec![
+            dir.path().join("a.epub").to_string_lossy().to_string(),
+            dir.path().join("b.pdf").to_string_lossy().to_string(),
+            dir.path().join("c.epub").to_string_lossy().to_string(),
+        ];
+        assert_eq!(result, expected, "files must be sorted alphabetically");
+    }
+
+    #[test]
+    fn mixed_inputs_preserve_input_order_then_sorted_dir_contents() {
+        // Verifies the two-level ordering contract:
+        //   1. Contributions appear in the order their inputs appear on the CLI.
+        //   2. Within a directory expansion, entries are sorted by file name.
+        let dir = tempdir().expect("temp dir");
+        let sub = dir.path().join("books");
+        fs::create_dir(&sub).expect("mkdir");
+
+        let explicit = dir.path().join("z_explicit.pdf");
+        fs::write(&explicit, b"").expect("write explicit");
+        fs::write(sub.join("b.epub"), b"").expect("write b");
+        fs::write(sub.join("a.mobi"), b"").expect("write a");
+
+        let inputs = vec![
+            explicit.to_string_lossy().to_string(),
+            sub.to_string_lossy().to_string(),
+        ];
+        let result = collect_files(&inputs, true);
+
+        let expected = vec![
+            explicit.to_string_lossy().to_string(),
+            sub.join("a.mobi").to_string_lossy().to_string(),
+            sub.join("b.epub").to_string_lossy().to_string(),
+        ];
+        assert_eq!(
+            result, expected,
+            "explicit file must come first, then dir contents in alphabetical order"
+        );
+    }
 }
