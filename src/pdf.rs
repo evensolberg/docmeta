@@ -85,7 +85,7 @@ mod tests {
             result.is_err(),
             "Expected an error for a PDF with no info dict"
         );
-        let msg = result.unwrap_err().to_string();
+        let msg = result.expect_err("should fail").to_string();
         assert!(
             msg.starts_with("No info dictionary found in "),
             "Error message should start with 'No info dictionary found in ', got: {msg}"
