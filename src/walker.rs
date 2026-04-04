@@ -1,7 +1,5 @@
 use walkdir::WalkDir;
 
-use crate::utils;
-
 const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 
 /// Collect file paths from the supplied inputs.
@@ -49,11 +47,21 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
                 })
                 .filter(|e| e.file_type().is_file())
             {
-                let path_str = entry.path().to_string_lossy();
-                if SUPPORTED_EXTENSIONS.contains(&utils::get_extension(&path_str).as_str()) {
-                    result.push(path_str.into_owned());
+                let path = entry.path();
+                let ext_matches = path.extension().is_some_and(|ext| {
+                    SUPPORTED_EXTENSIONS
+                        .iter()
+                        .any(|s| ext.eq_ignore_ascii_case(s))
+                });
+                if ext_matches {
+                    match path.to_str() {
+                        Some(s) => result.push(s.to_owned()),
+                        None => log::warn!("Skipping non-UTF-8 path: {}", path.display()),
+                    }
                 }
             }
+        } else {
+            log::warn!("Skipping unsupported file type (not a file or directory): {input}");
         }
     }
 
