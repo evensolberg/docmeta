@@ -20,7 +20,7 @@ pub fn get_year(date: &str) -> String {
     }
 
     let year = if date.starts_with("D:") {
-        let subdate = date.split(':').nth(1).unwrap_or("");
+        let subdate = date.strip_prefix("D:").unwrap_or("");
         subdate.get(0..4).unwrap_or("").to_string()
     } else if date.contains('-') {
         date.split('-').next().unwrap_or("").to_string()
@@ -54,6 +54,7 @@ mod tests {
         assert_eq!(get_year("2011-03-15T04:00:00+00:00"), "2011");
         assert_eq!(get_year("2020-02-07"), "2020");
         assert_eq!(get_year("D:20200207123456+00'00'"), "2020");
+        assert_eq!(get_year("D:20230101000000+05:30"), "2023");
         assert_eq!(get_year("2024"), "2024");
     }
 
