@@ -30,7 +30,8 @@ pub fn get_extension(filename: &str) -> String {
 /// - An ISO 8601 / hyphen-separated date (e.g. `"2024-01-01"`) — the part before the first
 ///   hyphen is returned.
 ///
-/// Returns an empty string when the year cannot be determined.
+/// Returns an empty string when the year cannot be extracted from a recognised format.
+/// Any string that does not match the above patterns is returned unchanged.
 ///
 /// # Examples
 ///

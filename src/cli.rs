@@ -12,7 +12,7 @@ use clap::{Arg, ArgAction, Command};
 /// | `--quiet` | `-q` | Suppress all output except errors |
 /// | `--detail-off` | `-o` | Skip per-file metadata output (useful when renaming) |
 /// | `--dry-run` | `-r` | Show what would happen without making changes |
-/// | `--rename-file` | `-n` | Rename each file according to the given pattern |
+/// | `--rename-file <pattern>` | `-n` | Rename each file using `<pattern>` as the template |
 pub fn build() -> Command {
     Command::new(clap::crate_name!())
         .about(clap::crate_description!())
