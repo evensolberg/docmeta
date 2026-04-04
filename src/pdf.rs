@@ -19,7 +19,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
 
     let file = pdf::file::FileOptions::cached().open(filename)?;
     let Some(info) = file.trailer.info_dict.as_ref() else {
-        return Err("No info dictionary found in {filename}".into());
+        return Err(format!("No info dictionary found in {filename}").into());
     };
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();
@@ -40,4 +40,25 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
     log::debug!("metadata_map: {metadata_map:?}");
 
     Ok(metadata_map)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn error_message_contains_filename_when_no_info_dict() {
+        let filename = "tests/fixtures/no-info-dict.pdf";
+        let result = get_metadata(filename);
+        assert!(result.is_err(), "Expected an error for a PDF with no info dict");
+        let msg = result.unwrap_err().to_string();
+        assert!(
+            msg.starts_with("No info dictionary found in "),
+            "Error message should start with 'No info dictionary found in ', got: {msg}"
+        );
+        assert!(
+            msg.contains(filename),
+            "Error message should contain the filename '{filename}', got: {msg}"
+        );
+    }
 }

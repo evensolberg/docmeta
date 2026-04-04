@@ -35,17 +35,17 @@ pub fn rename_file(
     let mut new_filename = pattern.to_string();
 
     // replace any options (eg. %aa, %tg) with the corresponding tag
-    new_filename = new_filename.replace("%t", tags.get("Title").unwrap_or(&"Unknown".to_string()));
-    new_filename = new_filename.replace("%a", tags.get("Author").unwrap_or(&"Unknown".to_string()));
+    new_filename = new_filename.replace("%t", tags.get("Title").map_or("Unknown", String::as_str));
+    new_filename = new_filename.replace("%a", tags.get("Author").map_or("Unknown", String::as_str));
     new_filename = new_filename.replace(
         "%p",
-        tags.get("Publisher").unwrap_or(&"Unknown".to_string()),
+        tags.get("Publisher").map_or("Unknown", String::as_str),
     );
     new_filename = new_filename.replace(
         "%i",
-        tags.get("Identifier").unwrap_or(&"Unknown".to_string()),
+        tags.get("Identifier").map_or("Unknown", String::as_str),
     );
-    new_filename = new_filename.replace("%y", tags.get("Year").unwrap_or(&"Unknown".to_string()));
+    new_filename = new_filename.replace("%y", tags.get("Year").map_or("Unknown", String::as_str));
 
     // Fix a few things we know will give us trouble later.
     new_filename = new_filename.replace('/', "-");
@@ -59,30 +59,28 @@ pub fn rename_file(
         return Err("No new filename generated".into());
     }
 
-    // Create the new filename
-    let mut new_path = Path::new(&new_filename).with_extension(utils::get_extension(filename));
-    log::debug!("new_path = {new_path:?}");
-
-    // Return if the new filename is the same as the old
-    let np = new_path.to_string_lossy().to_string();
-    if np == *filename {
-        log::debug!("New filename == old filename. Returning.");
-        return Ok(np);
-    }
-
     // Get the path in front of the filename (eg. "books/book.pdf" returns "books/")
     let parent = Path::new(&filename)
         .parent()
         .unwrap_or_else(|| Path::new("."));
-    log::debug!("parent = {parent:?}");
+    log::debug!("parent = {}", parent.display());
 
-    // Check if a file with the new filename already exists - make the filename unique if it does.
-    if Path::new(&new_path).exists() {
-        log::warn!("{new_filename} already exists. Appending unique identifier.");
-        new_filename = format!("{new_filename} ({:0>4})", get_unique_value());
+    // Create the full destination path, including the source file's parent directory
+    let mut new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    log::debug!("new_path = {}", new_path.display());
+
+    // Return if the new filename is the same as the old
+    if new_path.to_string_lossy() == filename {
+        log::debug!("New filename == old filename. Returning.");
+        return Ok(new_path.to_string_lossy().into_owned());
     }
 
-    new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    // Check if a file with the new filename already exists - make the filename unique if it does.
+    if new_path.exists() {
+        log::warn!("{new_filename} already exists. Appending unique identifier.");
+        new_filename = format!("{new_filename} ({:0>4})", get_unique_value());
+        new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    }
 
     // Perform the actual rename and check the outcome
     if dry_run {

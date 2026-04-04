@@ -14,43 +14,40 @@ use epub::doc::EpubDoc;
 /// A Result containing a `HashMap` with the metadata of the EPUB file.
 /// The `HashMap` contains the following keys:
 ///
-/// * `title` - The title of the EPUB file.
-/// * `author` - The author of the EPUB file.
-/// * `description` - The description of the EPUB file.
-/// * `publisher` - The publisher of the EPUB file.
-/// * `date` - The date of the EPUB file.
-/// * `language` - The language of the EPUB file.
-/// * `identifier` - The identifier of the EPUB file.
+/// * `Title` - The title of the EPUB file.
+/// * `Author` - The author of the EPUB file.
+/// * `Description` - The description of the EPUB file.
+/// * `Publisher` - The publisher of the EPUB file.
+/// * `Date` - The date of the EPUB file.
+/// * `Language` - The language of the EPUB file.
+/// * `Identifier` - The identifier of the EPUB file.
 ///
-/// If the metadata is not found, the value will be set to "Unknown".
+/// Keys are title-cased (e.g. `"Title"`, `"Author"`). If a metadata field is
+/// absent the key is still present in the map with an empty string value.
 ///
 /// # Example
 ///
 /// ```ignore
 /// use std::collections::HashMap;
-/// use epub_metadata::get_metadata;
+/// use docmeta::epub::get_metadata;
 /// let metadata = get_metadata("tests/test.epub").unwrap();
 /// let mut expected_metadata: HashMap<String, String> = HashMap::new();
-/// expected_metadata.insert("title".to_string(), "The Title".to_string());
-/// expected_metadata.insert("author".to_string(), "The Author".to_string());
-/// expected_metadata.insert("description".to_string(), "The Description".to_string());
-/// expected_metadata.insert("publisher".to_string(), "The Publisher".to_string());
-/// expected_metadata.insert("date".to_string(), "2021-01-01".to_string());
-/// expected_metadata.insert("language".to_string(), "en".to_string());
-/// expected_metadata.insert("identifier".to_string(), "urn:isbn:978-3-16-148410-0".to_string());
+/// expected_metadata.insert("Title".to_string(), "The Title".to_string());
+/// expected_metadata.insert("Author".to_string(), "The Author".to_string());
+/// expected_metadata.insert("Description".to_string(), "The Description".to_string());
+/// expected_metadata.insert("Publisher".to_string(), "The Publisher".to_string());
+/// expected_metadata.insert("Date".to_string(), "2021-01-01".to_string());
+/// expected_metadata.insert("Language".to_string(), "en".to_string());
+/// expected_metadata.insert("Identifier".to_string(), "urn:isbn:978-3-16-148410-0".to_string());
 /// assert_eq!(metadata, expected_metadata);
 /// ```
 ///
 /// # Errors
 ///
-/// If the EPUB file is not found or if there is an error reading the EPUB file,
-/// a Box<dyn Error> will be returned.
-/// If the metadata is not found, a Box<dyn Error> will be returned.
-/// If the metadata is not found, the value will be set to "Unknown".
+/// Returns `Err` if the EPUB file cannot be opened or parsed.
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
     let doc = EpubDoc::new(filename)?;
-    let metadata = doc.metadata;
-    log::debug!("metadata = {metadata:?}");
+    log::debug!("metadata = {:?}", doc.metadata);
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();
 
@@ -63,13 +60,11 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         "language",
         "identifier",
     ];
+
     for key in keys {
-        if let Some(value) = metadata.get(key) {
-            log::debug!("{key} = {value:?}");
-            metadata_map.insert(
-                key.to_string().to_case(Case::Title),
-                value.first().unwrap_or(&String::new()).to_string(),
-            );
+        if let Some(item) = doc.mdata(key) {
+            log::debug!("{key} = {:?}", item.value);
+            metadata_map.insert(key.to_string().to_case(Case::Title), item.value.clone());
         } else {
             log::debug!("No {key} found in metadata.");
             metadata_map.insert(key.to_string().to_case(Case::Title), String::new());
