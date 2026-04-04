@@ -249,7 +249,7 @@ mod tests {
         fs::write(dir.path().join("b.pdf"), b"").expect("write b");
 
         let dir_path = dir.path().to_string_lossy().to_string();
-        let result = collect_files(&[dir_path.clone()], true);
+        let result = collect_files(std::slice::from_ref(&dir_path), true);
 
         let expected = vec![
             dir.path().join("a.epub").to_string_lossy().to_string(),
