@@ -5,6 +5,7 @@ authors = ["Even Solberg"]
 edition = "2024"
 rust-version = "1.85"
 description = "A command line tool for displaying metadata in ebooks and renaming the files based on the metadata."
+exclude = ["tests/fixtures/**"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
