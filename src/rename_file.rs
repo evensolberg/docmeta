@@ -53,10 +53,9 @@ pub fn rename_file(
     new_filename = new_filename.replace(':', " -");
     new_filename = new_filename.replace('.', "");
 
-    // Strip characters forbidden on Windows or universally invalid in filenames.
-    for ch in ['*', '?', '"', '<', '>', '|', '\0'] {
-        new_filename = new_filename.replace(ch, "");
-    }
+    // Strip characters forbidden on Windows or universally invalid in filenames
+    // (e.g. NUL is rejected by every OS).
+    new_filename.retain(|ch| !matches!(ch, '*' | '?' | '"' | '<' | '>' | '|' | '\0'));
 
     // Remove leading or trailing spaces
     new_filename = new_filename.trim().to_string();
@@ -224,6 +223,14 @@ mod tests {
         let t = tags(&[("Title", "A*B?C\"D<E>F|G")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
         assert!(result.contains("ABCDEFG"), "forbidden chars not removed: {result}");
+    }
+
+    #[test]
+    fn pattern_of_only_forbidden_chars_returns_error() {
+        // After stripping forbidden chars the stem is empty → error
+        let result = rename_file("placeholder.epub", &tags(&[]), "*<>", false);
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "No new filename generated");
     }
 
     #[test]
