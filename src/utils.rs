@@ -42,7 +42,6 @@ pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
