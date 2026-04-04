@@ -81,7 +81,10 @@ mod tests {
     fn error_message_contains_filename_when_no_info_dict() {
         let filename = "tests/fixtures/no-info-dict.pdf";
         let result = get_metadata(filename);
-        assert!(result.is_err(), "Expected an error for a PDF with no info dict");
+        assert!(
+            result.is_err(),
+            "Expected an error for a PDF with no info dict"
+        );
         let msg = result.unwrap_err().to_string();
         assert!(
             msg.starts_with("No info dictionary found in "),

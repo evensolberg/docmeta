@@ -71,7 +71,8 @@ pub fn rename_file(
     log::debug!("parent = {}", parent.display());
 
     // Create the full destination path, including the source file's parent directory
-    let mut new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+    let mut new_path =
+        parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
     log::debug!("new_path = {}", new_path.display());
 
     // Return if the new filename is the same as the old
@@ -84,7 +85,8 @@ pub fn rename_file(
     if new_path.exists() {
         log::warn!("{new_filename} already exists. Appending unique identifier.");
         new_filename = format!("{new_filename} ({:0>4})", get_unique_value());
-        new_path = parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
+        new_path =
+            parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
     }
 
     // Perform the actual rename and check the outcome
@@ -128,7 +130,10 @@ mod tests {
     use tempfile::NamedTempFile;
 
     fn tags(pairs: &[(&str, &str)]) -> HashMap<String, String> {
-        pairs.iter().map(|(k, v)| ((*k).to_string(), (*v).to_string())).collect()
+        pairs
+            .iter()
+            .map(|(k, v)| ((*k).to_string(), (*v).to_string()))
+            .collect()
     }
 
     // ── get_unique_value ────────────────────────────────────────────────────
@@ -147,7 +152,10 @@ mod tests {
     fn empty_pattern_returns_error() {
         let result = rename_file("some_file.epub", &tags(&[]), "", false);
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "No rename pattern provided");
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "No rename pattern provided"
+        );
     }
 
     #[test]
@@ -177,14 +185,20 @@ mod tests {
         assert!(path.contains("My Book"), "title missing: {path}");
         assert!(path.contains("2024"), "year missing: {path}");
         assert!(path.contains("Acme"), "publisher missing: {path}");
-        assert!(path.contains("978-0-00-000000-0"), "identifier missing: {path}");
+        assert!(
+            path.contains("978-0-00-000000-0"),
+            "identifier missing: {path}"
+        );
     }
 
     #[test]
     fn missing_tags_fall_back_to_unknown() {
         let result = rename_file("placeholder.epub", &tags(&[]), "%t - %a", true);
         let path = result.expect("should succeed");
-        assert!(path.contains("Unknown - Unknown"), "expected 'Unknown - Unknown' in {path}");
+        assert!(
+            path.contains("Unknown - Unknown"),
+            "expected 'Unknown - Unknown' in {path}"
+        );
     }
 
     // ── character sanitisation ───────────────────────────────────────────────
@@ -200,7 +214,10 @@ mod tests {
     fn colon_in_tag_is_replaced_with_space_dash() {
         let t = tags(&[("Title", "Volume: One")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
-        assert!(result.contains("Volume - One"), "colon not sanitised: {result}");
+        assert!(
+            result.contains("Volume - One"),
+            "colon not sanitised: {result}"
+        );
     }
 
     #[test]
@@ -222,7 +239,10 @@ mod tests {
         // * ? " < > | are forbidden on Windows
         let t = tags(&[("Title", "A*B?C\"D<E>F|G")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
-        assert!(result.contains("ABCDEFG"), "forbidden chars not removed: {result}");
+        assert!(
+            result.contains("ABCDEFG"),
+            "forbidden chars not removed: {result}"
+        );
     }
 
     #[test]
@@ -238,7 +258,10 @@ mod tests {
         let t = tags(&[("Title", "A\0B")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
         assert!(result.contains("AB"), "NUL byte not removed: {result}");
-        assert!(!result.contains('\0'), "NUL byte present in result: {result}");
+        assert!(
+            !result.contains('\0'),
+            "NUL byte present in result: {result}"
+        );
     }
 
     // ── dry run ──────────────────────────────────────────────────────────────
@@ -252,9 +275,15 @@ mod tests {
         let result = rename_file(&src_path, &t, "%t", true).expect("ok");
 
         // Source still exists
-        assert!(fs::metadata(&src_path).is_ok(), "source was deleted in dry-run");
+        assert!(
+            fs::metadata(&src_path).is_ok(),
+            "source was deleted in dry-run"
+        );
         // Destination (result path) does not exist
-        assert!(fs::metadata(&result).is_err(), "destination was created in dry-run");
+        assert!(
+            fs::metadata(&result).is_err(),
+            "destination was created in dry-run"
+        );
     }
 
     // ── actual rename ────────────────────────────────────────────────────────
@@ -269,8 +298,14 @@ mod tests {
         let t = tags(&[("Title", "RenamedFile")]);
         let result = rename_file(&src_str, &t, "%t", false).expect("rename should succeed");
 
-        assert!(fs::metadata(&src_str).is_err(), "source still exists after rename");
-        assert!(fs::metadata(&result).is_ok(), "destination does not exist after rename");
+        assert!(
+            fs::metadata(&src_str).is_err(),
+            "source still exists after rename"
+        );
+        assert!(
+            fs::metadata(&result).is_ok(),
+            "destination does not exist after rename"
+        );
     }
 
     // ── same-filename guard ──────────────────────────────────────────────────
