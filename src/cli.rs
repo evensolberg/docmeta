@@ -23,7 +23,7 @@ pub fn build() -> Command {
         .arg(
             Arg::new("read")
                 .value_name("filename(s)")
-                .help("One or more filename(s) to process. Wildcards and multiple_occurrences filenames (e.g. 2019*.pdf 2020*.pdf) are supported.")
+                .help("One or more files or directories to process. Wildcards are supported. Use --recursive to traverse directories.")
                 .num_args(1..)
                 .required(true)
                 .action(ArgAction::Append),

@@ -1,5 +1,6 @@
-use std::path::Path;
 use walkdir::WalkDir;
+
+use crate::utils;
 
 const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 
@@ -19,33 +20,26 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
     let mut result = Vec::new();
 
     for input in inputs {
-        let path = Path::new(input);
-
-        if !path.exists() {
+        let Ok(meta) = std::fs::metadata(input) else {
             log::warn!("Path does not exist, skipping: {input}");
             continue;
-        }
+        };
 
-        if path.is_file() {
+        if meta.is_file() {
             result.push(input.clone());
-        } else if path.is_dir() {
+        } else if meta.is_dir() {
             if !recursive {
                 log::warn!("Directory skipped (use --recursive to traverse): {input}");
                 continue;
             }
-            for entry in WalkDir::new(path)
+            for entry in WalkDir::new(input)
                 .into_iter()
                 .filter_map(std::result::Result::ok)
                 .filter(|e| e.file_type().is_file())
             {
-                let ext = entry
-                    .path()
-                    .extension()
-                    .and_then(|s| s.to_str())
-                    .map(str::to_ascii_lowercase)
-                    .unwrap_or_default();
-                if SUPPORTED_EXTENSIONS.contains(&ext.as_str()) {
-                    result.push(entry.path().to_string_lossy().into_owned());
+                let path_str = entry.path().to_string_lossy();
+                if SUPPORTED_EXTENSIONS.contains(&utils::get_extension(&path_str).as_str()) {
+                    result.push(path_str.into_owned());
                 }
             }
         }
@@ -133,7 +127,6 @@ mod tests {
         fs::write(dir.path().join("a.epub"), b"").expect("write");
         fs::write(sub.join("b.mobi"), b"").expect("write");
         fs::write(sub.join("c.pdf"), b"").expect("write");
-        // unsupported — should be excluded
         fs::write(dir.path().join("readme.txt"), b"").expect("write");
 
         let dir_path = dir.path().to_string_lossy().to_string();

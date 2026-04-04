@@ -46,13 +46,14 @@ fn run() -> Result<(), Box<dyn Error>> {
     // Initialize logging
     logbuilder.target(Target::Stdout).init();
 
-    // Expand inputs — directories are walked when --recursive is set
-    let raw_inputs: Vec<String> = cli_args
-        .get_many::<String>("read")
-        .unwrap_or_default()
-        .cloned()
-        .collect();
-    let files = walker::collect_files(&raw_inputs, recursive);
+    let files = walker::collect_files(
+        &cli_args
+            .get_many::<String>("read")
+            .unwrap_or_default()
+            .cloned()
+            .collect::<Vec<_>>(),
+        recursive,
+    );
 
     // Initialize variables
     let mut tags;
