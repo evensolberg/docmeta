@@ -105,14 +105,26 @@ pub fn rename_file(
     Ok(result)
 }
 
-/// Gets the microsecond part of the current duration since `UNIX_EPOCH` and modulate to a 4-digit number.
-/// This is used to ensure uniqueness of file names.
-/// This can be changed to something else later without impacting the main application.
-/// For example, one could switch to a random number generator or something.
+/// Returns a unique numeric identifier (range `0–9_999_999`) derived from the microsecond
+/// component of the current duration since `UNIX_EPOCH`. Used to de-collide file names.
+/// The implementation can be swapped (e.g. for an RNG) without affecting callers.
 fn get_unique_value() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards. You probably have bigger things to worry about.")
         .as_micros()
         % 10_000_000
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unique_value_is_within_seven_digits() {
+        for _ in 0..100 {
+            let val = get_unique_value();
+            assert!(val < 10_000_000, "expected < 10_000_000, got {val}");
+        }
+    }
 }
