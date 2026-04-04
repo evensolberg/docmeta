@@ -18,11 +18,11 @@ runtimes:
 lint:
   enabled:
     - checkov@3.2.282
-    - clippy@1.65.0
+    - clippy@1.85.0
     - git-diff-check
     - markdownlint@0.42.0
     - prettier@3.3.3
-    - rustfmt@1.65.0
+    - rustfmt@1.85.0
     - taplo@0.9.3
     - trufflehog@3.83.5
     - yamllint@1.35.1

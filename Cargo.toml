@@ -3,7 +3,7 @@ name = "docmeta"
 version = "0.3.6"
 authors = ["Even Solberg"]
 edition = "2024"
-include = ["src/main.rs", "README.md"]
+rust-version = "1.85"
 description = "A command line tool for displaying metadata in ebooks and renaming the files based on the metadata."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
