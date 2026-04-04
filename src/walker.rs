@@ -41,13 +41,11 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
                 .filter_map(|e| match e {
                     Ok(entry) => Some(entry),
                     Err(err) => {
-                        if let Some(path) = err.path() {
-                            log::warn!(
-                                "Skipping entry while walking {input}: {} ({err})",
-                                path.display()
-                            );
-                        } else {
-                            log::warn!("Skipping entry while walking {input}: {err}");
+                        match (err.path(), err.io_error()) {
+                            (Some(path), Some(io_err)) => {
+                                log::warn!("Skipping {} ({io_err})", path.display());
+                            }
+                            _ => log::warn!("Skipping entry: {err}"),
                         }
                         None
                     }
