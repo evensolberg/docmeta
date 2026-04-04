@@ -1,5 +1,5 @@
+use crate::utils;
 use mobi::Mobi;
-
 use std::{collections::HashMap, error::Error};
 
 /// Read metadata from a MOBI file and return it as a [`HashMap`].
@@ -20,6 +20,7 @@ use std::{collections::HashMap, error::Error};
 /// | `"Publisher"` | Publisher name, or empty string if absent |
 /// | `"Identifier"` | ISBN, or empty string if absent |
 /// | `"Date"` | Publish date string, or empty string if absent |
+/// | `"Year"` | Four-digit year extracted from `Date`, or empty string if absent |
 ///
 /// # Errors
 ///
@@ -52,8 +53,23 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         mobi_file.publish_date().unwrap_or_else(String::new),
     );
 
+    // Extract year from the date string and store it alongside
+    let date = metadata_map.get("Date").map_or("", String::as_str).to_owned();
+    metadata_map.insert("Year".to_string(), utils::get_year(&date));
+
     log::debug!("metadata_map = {metadata_map:?}");
 
     // return the metadata
     Ok(metadata_map)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_metadata_includes_year_key() {
+        let map = get_metadata("tests/fixtures/Mastering.mobi").expect("should parse");
+        assert_eq!(map.get("Year").map(String::as_str), Some("2019"), "unexpected Year value");
+    }
 }

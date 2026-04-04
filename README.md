@@ -2,6 +2,23 @@
 
 Show metadata from ePUB, Mobi, and PDF files and rename the files based on the metadata.
 
+## Installation
+
+### From crates.io
+
+```console
+cargo install docmeta
+```
+
+### From source
+
+```console
+git clone https://github.com/evensolberg/docmeta.git
+cd docmeta
+cargo build --release
+# Binary is at target/release/docmeta
+```
+
 ## Usage
 
 ```console
@@ -32,3 +49,27 @@ The `-r`/`--dry-run`, `-o`/`--detail-off`,  and `-q`/`--quiet` options are only 
 | `%y` | Year |
 
 Try running with the `-r`/`--dry-run` option first to ensure you get the result you want.
+
+## Metadata Keys
+
+Each format exposes a consistent set of keys. All formats always produce a `Year` key
+(empty string when no date is available).
+
+| Key | EPUB | MOBI | PDF |
+|-----|------|------|-----|
+| `Title` | ✓ | ✓ | ✓ |
+| `Author` | ✓ | ✓ | ✓ |
+| `Description` | ✓ | ✓ | — |
+| `Publisher` | ✓ | ✓ | — |
+| `Identifier` | ✓ | ✓ (ISBN) | — |
+| `Date` | ✓ | ✓ | — |
+| `Year` | ✓ | ✓ | ✓ |
+| `Language` | ✓ | — | — |
+| `Subject` | — | — | ✓ |
+| `Keywords` | — | — | ✓ |
+| `Creator` | — | — | ✓ |
+| `Producer` | — | — | ✓ |
+
+> **Note:** EPUB and MOBI include both `Date` (the raw date string from the file) and
+> `Year` (just the four-digit year, extracted for use in rename patterns). PDF uses
+> native date parsing and only exposes `Year`.

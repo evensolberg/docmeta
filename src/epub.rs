@@ -1,3 +1,4 @@
+use crate::utils;
 use convert_case::{Case, Casing};
 use std::{collections::HashMap, error::Error};
 
@@ -18,9 +19,10 @@ use epub::doc::EpubDoc;
 /// * `Author` - The author of the EPUB file.
 /// * `Description` - The description of the EPUB file.
 /// * `Publisher` - The publisher of the EPUB file.
-/// * `Date` - The date of the EPUB file.
+/// * `Date` - The raw date string from the EPUB file.
 /// * `Language` - The language of the EPUB file.
 /// * `Identifier` - The identifier of the EPUB file.
+/// * `Year` - The four-digit year extracted from `Date`.
 ///
 /// Keys are title-cased (e.g. `"Title"`, `"Author"`). If a metadata field is
 /// absent the key is still present in the map with an empty string value.
@@ -71,7 +73,22 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
         }
     }
 
+    // Extract year from the date string and store it alongside
+    let date = metadata_map.get("Date").map_or("", String::as_str).to_owned();
+    metadata_map.insert("Year".to_string(), utils::get_year(&date));
+
     // return the metadata
     log::debug!("metadata_map = {metadata_map:?}");
     Ok(metadata_map)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_metadata_includes_year_key() {
+        let map = get_metadata("tests/fixtures/Mastering.epub").expect("should parse");
+        assert_eq!(map.get("Year").map(String::as_str), Some("2019"), "unexpected Year value");
+    }
 }
