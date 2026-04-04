@@ -12,7 +12,7 @@ const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 /// - **Directory** with `recursive = true`: walked depth-first; only files
 ///   whose extensions appear in [`SUPPORTED_EXTENSIONS`] are included.
 /// - **Directory** with `recursive = false`: skipped with a warning.
-/// - Anything that does not exist on disk: skipped with a warning.
+/// - Anything that cannot be stat'd (does not exist, permission denied, etc.): skipped with a warning.
 ///
 /// The returned list preserves the encounter order (files before directory
 /// contents, directory contents in `WalkDir` order).
@@ -20,9 +20,12 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
     let mut result = Vec::new();
 
     for input in inputs {
-        let Ok(meta) = std::fs::metadata(input) else {
-            log::warn!("Path does not exist, skipping: {input}");
-            continue;
+        let meta = match std::fs::metadata(input) {
+            Ok(meta) => meta,
+            Err(err) => {
+                log::warn!("Failed to stat path, skipping: {input} ({err})");
+                continue;
+            }
         };
 
         if meta.is_file() {
@@ -64,7 +67,11 @@ mod tests {
 
     #[test]
     fn nonexistent_path_is_skipped() {
-        let result = collect_files(&["/no/such/path/book.epub".to_string()], false);
+        let dir = tempdir().expect("temp dir");
+        let missing = dir.path().join("book.epub"); // never created
+        let path = missing.to_string_lossy().to_string();
+
+        let result = collect_files(std::slice::from_ref(&path), false);
         assert!(result.is_empty());
     }
 

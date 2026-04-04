@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - Add `--recursive` / `-R` flag to traverse directories and collect all supported ebook files
-- New `walker` module with `collect_files` helper; 10 unit tests covering files, dirs, mixed inputs, extension filtering, and case-insensitivity
+- New `walker` module with `collect_files` helper; 11 unit tests covering files, dirs, mixed inputs, extension filtering, and case-insensitivity
 
 ## [0.3.6] - 2026-04-04
 
