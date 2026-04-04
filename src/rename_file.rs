@@ -163,7 +163,10 @@ mod tests {
         // Pattern "." becomes "" after the '.' sanitisation step
         let result = rename_file("some_file.epub", &tags(&[]), ".", false);
         assert!(result.is_err());
-        assert_eq!(result.expect_err("should fail").to_string(), "No new filename generated");
+        assert_eq!(
+            result.expect_err("should fail").to_string(),
+            "No new filename generated"
+        );
     }
 
     // ── tag substitution ────────────────────────────────────────────────────
@@ -250,7 +253,10 @@ mod tests {
         // After stripping forbidden chars the stem is empty → error
         let result = rename_file("placeholder.epub", &tags(&[]), "*<>", false);
         assert!(result.is_err());
-        assert_eq!(result.expect_err("should fail").to_string(), "No new filename generated");
+        assert_eq!(
+            result.expect_err("should fail").to_string(),
+            "No new filename generated"
+        );
     }
 
     #[test]
