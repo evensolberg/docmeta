@@ -20,8 +20,8 @@ pub fn get_year(date: &str) -> String {
     }
 
     let year = if date.starts_with("D:") {
-        let subdate = date.split(':').nth(1).unwrap_or("").to_string();
-        subdate[0..4].to_string()
+        let subdate = date.split(':').nth(1).unwrap_or("");
+        subdate.get(0..4).unwrap_or("").to_string()
     } else if date.contains('-') {
         date.split('-').next().unwrap_or("").to_string()
     } else {
@@ -60,6 +60,18 @@ mod tests {
         assert_eq!(get_year("2020-02-07"), "2020");
         assert_eq!(get_year("D:20200207123456+00'00'"), "2020");
         assert_eq!(get_year("2024"), "2024");
+    }
+
+    #[test]
+    fn test_get_year_edge_cases() {
+        // "D:" with nothing after the colon — split yields "", should not panic
+        assert_eq!(get_year("D:"), "");
+        // "D:" with fewer than 4 digits after the colon
+        assert_eq!(get_year("D:202"), "");
+        // empty string
+        assert_eq!(get_year(""), "");
+        // non-numeric, non-date garbage
+        assert_eq!(get_year("unknown"), "unknown");
     }
 
     #[test]
