@@ -1,6 +1,6 @@
 [package]
 name = "docmeta"
-version = "0.3.6"
+version = "0.4.0"
 authors = ["Even Solberg"]
 edition = "2024"
 rust-version = "1.85"
@@ -17,6 +17,7 @@ epub = "2.1.5"
 log = "0.4.29"
 mobi = "0.8.0"
 pdf = "0.10.0"
+walkdir = "2.5.0"
 
 [profile.release]
 opt-level = 'z'
