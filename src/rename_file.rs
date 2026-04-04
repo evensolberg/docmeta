@@ -70,7 +70,7 @@ pub fn rename_file(
     log::debug!("new_path = {}", new_path.display());
 
     // Return if the new filename is the same as the old
-    if new_path.to_string_lossy() == *filename {
+    if new_path.to_string_lossy() == filename {
         log::debug!("New filename == old filename. Returning.");
         return Ok(new_path.to_string_lossy().into_owned());
     }
