@@ -1,13 +1,13 @@
 ---
 id: meta-3tc
 title: Harden filename character sanitisation
-status: open
-type: idea
+status: closed
+type: feature
 priority: 3
 tags:
 - rename
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 dependencies: []
 ---
 

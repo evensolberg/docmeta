@@ -1,7 +1,7 @@
 ---
 id: meta-b18
 title: Add installation instructions to README
-status: open
+status: closed
 type: task
 priority: 2
 tags:

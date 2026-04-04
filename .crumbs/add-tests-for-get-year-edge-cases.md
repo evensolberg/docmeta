@@ -1,7 +1,7 @@
 ---
 id: meta-hbx
 title: Add tests for get_year edge cases
-status: open
+status: closed
 type: task
 priority: 2
 tags:
@@ -9,6 +9,7 @@ tags:
 - utils
 created: 2026-04-03
 updated: 2026-04-03
+closed_reason: 'Done: test_get_year_edge_cases added in PR #13, also covers D: timezone colon notation'
 dependencies: []
 ---
 

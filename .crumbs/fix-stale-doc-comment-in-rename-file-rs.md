@@ -1,7 +1,7 @@
 ---
 id: meta-ln4
 title: Fix stale doc comment in rename_file.rs
-status: open
+status: closed
 type: bug
 priority: 2
 tags:

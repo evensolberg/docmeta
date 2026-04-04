@@ -1,14 +1,14 @@
 ---
 id: meta-ltd
 title: Add GitHub Actions CI workflow
-status: open
+status: closed
 type: feature
 priority: 1
 tags:
 - ci
 - testing
 created: 2026-04-03
-updated: 2026-04-03
+updated: 2026-04-04
 dependencies: []
 ---
 

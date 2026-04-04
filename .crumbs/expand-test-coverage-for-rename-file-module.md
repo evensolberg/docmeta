@@ -1,7 +1,7 @@
 ---
 id: meta-15d
 title: Expand test coverage for rename_file module
-status: open
+status: closed
 type: task
 priority: 2
 tags:

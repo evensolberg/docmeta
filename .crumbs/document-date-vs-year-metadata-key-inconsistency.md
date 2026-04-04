@@ -1,7 +1,7 @@
 ---
 id: meta-kne
 title: Document Date vs Year metadata key inconsistency
-status: open
+status: closed
 type: task
 priority: 3
 tags:

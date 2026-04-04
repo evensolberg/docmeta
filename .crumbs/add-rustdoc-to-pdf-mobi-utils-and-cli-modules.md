@@ -1,7 +1,7 @@
 ---
 id: meta-e0u
 title: Add rustdoc to pdf, mobi, utils, and cli modules
-status: open
+status: closed
 type: task
 priority: 2
 tags:
