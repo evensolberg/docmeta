@@ -47,11 +47,11 @@ use epub::doc::EpubDoc;
 /// # Errors
 ///
 /// Returns `Err` if the EPUB file cannot be opened or parsed.
-pub fn get_metadata(filename: &str) -> anyhow::Result<HashMap<String, String>> {
+pub fn get_metadata(filename: &str) -> anyhow::Result<HashMap<String, Option<String>>> {
     let doc = EpubDoc::new(filename)?;
     log::debug!("metadata = {:?}", doc.metadata);
 
-    let mut metadata_map: HashMap<String, String> = HashMap::new();
+    let mut metadata_map: HashMap<String, Option<String>> = HashMap::new();
 
     let keys = vec![
         "title",
@@ -64,21 +64,23 @@ pub fn get_metadata(filename: &str) -> anyhow::Result<HashMap<String, String>> {
     ];
 
     for key in keys {
-        if let Some(item) = doc.mdata(key) {
+        let value = doc.mdata(key).map(|item| {
             log::debug!("{key} = {:?}", item.value);
-            metadata_map.insert(key.to_string().to_case(Case::Title), item.value.clone());
-        } else {
+            item.value.clone()
+        });
+        if value.is_none() {
             log::debug!("No {key} found in metadata.");
-            metadata_map.insert(key.to_string().to_case(Case::Title), String::new());
         }
+        metadata_map.insert(key.to_string().to_case(Case::Title), value);
     }
 
     // Extract year from the date string and store it alongside
-    let date = metadata_map
+    let year = metadata_map
         .get("Date")
-        .map_or("", String::as_str)
-        .to_owned();
-    metadata_map.insert("Year".to_string(), utils::get_year(&date));
+        .and_then(Option::as_deref)
+        .map(utils::get_year)
+        .filter(|y| !y.is_empty());
+    metadata_map.insert("Year".to_string(), year);
 
     // return the metadata
     log::debug!("metadata_map = {metadata_map:?}");
@@ -93,7 +95,7 @@ mod tests {
     fn get_metadata_includes_year_key() {
         let map = get_metadata("tests/fixtures/Mastering.epub").expect("should parse");
         assert_eq!(
-            map.get("Year").map(String::as_str),
+            map.get("Year").and_then(Option::as_deref),
             Some("2019"),
             "unexpected Year value"
         );

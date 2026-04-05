@@ -58,12 +58,11 @@ pub fn get_year(date: &str) -> String {
 /// Print each metadata key/value pair to stdout.
 ///
 /// Empty values are displayed as `"N/A"` rather than a blank.
-pub fn print_metadata(tags: &std::collections::HashMap<String, String>) {
+pub fn print_metadata(tags: &std::collections::HashMap<String, Option<String>>) {
     for (key, value) in tags {
-        if value.is_empty() {
-            println!("{key}: N/A");
-        } else {
-            println!("{key}: {value}");
+        match value {
+            Some(v) => println!("{key}: {v}"),
+            None => println!("{key}: N/A"),
         }
     }
 }
