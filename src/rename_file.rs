@@ -84,26 +84,21 @@ pub fn rename_file(
             .unwrap_or("Unknown"),
     );
 
-    // Single-pass sanitisation: semantic replacements + forbidden-char removal.
-    // Combining these avoids the intermediate Strings produced by chained .replace() calls.
-    // Capacity is a lower-bound hint; ':' expands to two chars so a colon-heavy filename
-    // may trigger one realloc — still far fewer allocations than the original approach.
+    // Single-pass sanitisation combining semantic replacements and forbidden-char removal.
+    // Avoids the intermediate Strings produced by chained .replace() calls.
     let mut sanitised = String::with_capacity(new_filename.len());
     for ch in new_filename.chars() {
         match ch {
             '/' | '\\' => sanitised.push('-'),
             ':' => sanitised.push_str(" -"),
-            // Dots removed for readability; forbidden on Windows or universally invalid.
+            // Dots removed for readability; rest are forbidden on Windows or universally invalid.
             '.' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => {}
             ch => sanitised.push(ch),
         }
     }
     new_filename = sanitised;
 
-    // Remove leading or trailing spaces in-place (avoids a clone when nothing to trim).
-    let trim_start = new_filename.len() - new_filename.trim_start().len();
-    new_filename.drain(..trim_start);
-    new_filename.truncate(new_filename.trim_end().len());
+    new_filename = new_filename.trim().to_string();
 
     if new_filename.is_empty() {
         return Err(RenameError::EmptyResult);
@@ -121,7 +116,6 @@ pub fn rename_file(
     log::debug!("new_path = {}", new_path.display());
 
     // Return if the new filename is the same as the old.
-    // Bind the Cow once so we don't construct it twice for the comparison + return.
     {
         let s = new_path.to_string_lossy();
         if s == filename {
@@ -138,8 +132,6 @@ pub fn rename_file(
             parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
     }
 
-    // Perform the actual rename and check the outcome.
-    // new_path is finalised here; use display() for logging (no allocation needed).
     if dry_run {
         log::debug!("dry_run: {filename} --> {}", new_path.display());
     } else {
