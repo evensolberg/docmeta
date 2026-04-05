@@ -116,9 +116,13 @@ pub fn rename_file(
 /// component of the current duration since `UNIX_EPOCH`. Used to de-collide file names.
 /// The implementation can be swapped (e.g. for an RNG) without affecting callers.
 fn get_unique_value() -> u128 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or(Duration::ZERO)
+    unique_value_from(SystemTime::now())
+}
+
+/// Inner implementation so the clock source is injectable in tests.
+fn unique_value_from(time: SystemTime) -> u128 {
+    time.duration_since(UNIX_EPOCH)
+        .unwrap_or_else(|e| e.duration())
         .as_micros()
         % 10_000_000
 }
@@ -144,6 +148,16 @@ mod tests {
             let val = get_unique_value();
             assert!(val < 10_000_000, "expected < 10_000_000, got {val}");
         }
+    }
+
+    #[test]
+    fn unique_value_from_before_epoch_is_in_range() {
+        // Exercises the Err branch: a time before UNIX_EPOCH causes
+        // duration_since to fail; unique_value_from must still return a value
+        // in 0..10_000_000 rather than panicking.
+        let before_epoch = UNIX_EPOCH - Duration::from_secs(1);
+        let val = unique_value_from(before_epoch);
+        assert!(val < 10_000_000, "expected < 10_000_000, got {val}");
     }
 
     // ── error paths ─────────────────────────────────────────────────────────
