@@ -1,7 +1,10 @@
 use std::ffi::OsStr;
 use std::path::Path;
 
-/// Return the lowercase file extension of `filename`, or an empty string if there is none.
+/// Return the file extension of `filename` as a `&str`, or `""` if there is none.
+///
+/// The extension is returned as-is (original case). Callers that need case-insensitive
+/// matching should use [`str::eq_ignore_ascii_case`].
 ///
 /// # Examples
 ///
@@ -9,15 +12,13 @@ use std::path::Path;
 /// assert_eq!(get_extension("book.epub"), "epub");
 /// assert_eq!(get_extension("archive.tar.gz"), "gz");
 /// assert_eq!(get_extension("README"), "");
+/// assert_eq!(get_extension("BOOK.EPUB"), "EPUB");
 /// ```
-pub fn get_extension(filename: &str) -> String {
-    Path::new(&filename)
+pub fn get_extension(filename: &str) -> &str {
+    Path::new(filename)
         .extension()
-        .unwrap_or_else(|| OsStr::new(""))
-        .to_ascii_lowercase()
-        .to_str()
+        .and_then(OsStr::to_str)
         .unwrap_or("")
-        .to_string()
 }
 
 /// Extract the four-digit year from a date string.
@@ -92,5 +93,11 @@ mod tests {
         assert_eq!(get_extension("document.pdf"), "pdf");
         assert_eq!(get_extension("document.xyz.pdf"), "pdf");
         assert_eq!(get_extension("no_extension"), "");
+    }
+
+    #[test]
+    fn get_extension_preserves_original_case() {
+        assert_eq!(get_extension("BOOK.EPUB"), "EPUB");
+        assert_eq!(get_extension("archive.TAR"), "TAR");
     }
 }

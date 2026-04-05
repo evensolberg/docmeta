@@ -1,7 +1,7 @@
 ---
 id: meta-idh
 title: 'get_field! macro: replace clone with a free function'
-status: open
+status: closed
 type: task
 priority: 2
 tags:
