@@ -1,7 +1,7 @@
 ---
 id: meta-hwc
 title: 'rename_file: replace expect() on SystemTime with unwrap_or fallback'
-status: open
+status: closed
 type: bug
 priority: 3
 tags:
