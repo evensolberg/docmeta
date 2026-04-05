@@ -1,6 +1,6 @@
 use crate::utils;
 use convert_case::{Case, Casing};
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
 use epub::doc::EpubDoc;
 
@@ -47,7 +47,7 @@ use epub::doc::EpubDoc;
 /// # Errors
 ///
 /// Returns `Err` if the EPUB file cannot be opened or parsed.
-pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
+pub fn get_metadata(filename: &str) -> anyhow::Result<HashMap<String, String>> {
     let doc = EpubDoc::new(filename)?;
     log::debug!("metadata = {:?}", doc.metadata);
 

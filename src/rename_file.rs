@@ -1,10 +1,28 @@
 use crate::utils;
 use std::{
     collections::HashMap,
-    error::Error,
     path::Path,
     time::{SystemTime, UNIX_EPOCH},
 };
+
+/// Errors that can occur when renaming a file.
+#[derive(Debug, thiserror::Error)]
+pub enum RenameError {
+    /// No rename pattern was supplied.
+    #[error("No rename pattern provided")]
+    EmptyPattern,
+    /// After tag substitution and sanitisation, the filename stem is empty.
+    #[error("No new filename generated")]
+    EmptyResult,
+    /// The underlying filesystem rename failed.
+    #[error("Unable to rename {from} to {to}: {source}")]
+    RenameFailed {
+        from: String,
+        to: String,
+        #[source]
+        source: std::io::Error,
+    },
+}
 
 /// Renames the file provided based on the pattern provided.
 ///
@@ -26,10 +44,10 @@ pub fn rename_file(
     tags: &HashMap<String, String>,
     pattern: &str,
     dry_run: bool,
-) -> Result<String, Box<dyn Error>> {
+) -> Result<String, RenameError> {
     // Check if there is a rename pattern
     if pattern.is_empty() {
-        return Err("No rename pattern provided".into());
+        return Err(RenameError::EmptyPattern);
     }
 
     let mut new_filename = pattern.to_string();
@@ -61,7 +79,7 @@ pub fn rename_file(
     new_filename = new_filename.trim().to_string();
 
     if new_filename.is_empty() {
-        return Err("No new filename generated".into());
+        return Err(RenameError::EmptyResult);
     }
 
     // Get the path in front of the filename (eg. "books/book.pdf" returns "books/")
@@ -97,12 +115,12 @@ pub fn rename_file(
         let rn_res = std::fs::rename(filename, &new_path);
         match rn_res {
             Ok(()) => log::debug!("{filename} --> {}", new_path.to_string_lossy()),
-            Err(err) => {
-                return Err(format!(
-                    "Unable to rename {filename} to {}. Error message: {err}",
-                    new_path.to_string_lossy(),
-                )
-                .into());
+            Err(source) => {
+                return Err(RenameError::RenameFailed {
+                    from: filename.to_owned(),
+                    to: new_path.to_string_lossy().into_owned(),
+                    source,
+                });
             }
         }
     }
@@ -183,23 +201,17 @@ mod tests {
 
     #[test]
     fn empty_pattern_returns_error() {
-        let result = rename_file("some_file.epub", &tags(&[]), "", false);
-        assert!(result.is_err());
-        assert_eq!(
-            result.expect_err("should fail").to_string(),
-            "No rename pattern provided"
-        );
+        let err = rename_file("some_file.epub", &tags(&[]), "", false)
+            .expect_err("should fail");
+        assert!(matches!(err, RenameError::EmptyPattern));
     }
 
     #[test]
     fn pattern_that_sanitises_to_empty_returns_error() {
         // Pattern "." becomes "" after the '.' sanitisation step
-        let result = rename_file("some_file.epub", &tags(&[]), ".", false);
-        assert!(result.is_err());
-        assert_eq!(
-            result.expect_err("should fail").to_string(),
-            "No new filename generated"
-        );
+        let err = rename_file("some_file.epub", &tags(&[]), ".", false)
+            .expect_err("should fail");
+        assert!(matches!(err, RenameError::EmptyResult));
     }
 
     // ── tag substitution ────────────────────────────────────────────────────
@@ -284,12 +296,9 @@ mod tests {
     #[test]
     fn pattern_of_only_forbidden_chars_returns_error() {
         // After stripping forbidden chars the stem is empty → error
-        let result = rename_file("placeholder.epub", &tags(&[]), "*<>", false);
-        assert!(result.is_err());
-        assert_eq!(
-            result.expect_err("should fail").to_string(),
-            "No new filename generated"
-        );
+        let err = rename_file("placeholder.epub", &tags(&[]), "*<>", false)
+            .expect_err("should fail");
+        assert!(matches!(err, RenameError::EmptyResult));
     }
 
     #[test]

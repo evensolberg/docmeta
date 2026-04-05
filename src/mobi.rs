@@ -1,6 +1,6 @@
 use crate::utils;
 use mobi::Mobi;
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
 
 /// Read metadata from a MOBI file and return it as a [`HashMap`].
 ///
@@ -25,7 +25,7 @@ use std::{collections::HashMap, error::Error};
 /// # Errors
 ///
 /// Returns `Err` if the file cannot be opened or parsed as a MOBI document.
-pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
+pub fn get_metadata(filename: &str) -> anyhow::Result<HashMap<String, String>> {
     let mobi_file = Mobi::from_path(filename)?;
     log::debug!("metadata = {:?}", mobi_file.metadata);
 

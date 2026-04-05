@@ -1,5 +1,16 @@
 use pdf::primitive::PdfString;
-use std::{collections::HashMap, error::Error};
+use std::collections::HashMap;
+
+/// Errors that can occur when reading PDF metadata.
+#[derive(Debug, thiserror::Error)]
+pub enum PdfMetaError {
+    /// The PDF file could not be opened or parsed.
+    #[error(transparent)]
+    Pdf(#[from] pdf::PdfError),
+    /// The PDF contains no info dictionary.
+    #[error("No info dictionary found in {0}")]
+    NoInfoDict(String),
+}
 
 /// Convert an optional [`PdfString`] reference to a plain [`String`].
 ///
@@ -47,12 +58,12 @@ macro_rules! get_field {
 /// - The `pdf` crate cannot open or parse the file (corrupt data, unsupported version,
 ///   permission denied, etc.) — the underlying crate error is propagated.
 /// - The PDF contains no info dictionary — the error message includes `filename`.
-pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
+pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, PdfMetaError> {
     log::debug!("Opening file: {filename}");
 
     let file = pdf::file::FileOptions::cached().open(filename)?;
     let Some(info) = file.trailer.info_dict.as_ref() else {
-        return Err(format!("No info dictionary found in {filename}").into());
+        return Err(PdfMetaError::NoInfoDict(filename.to_owned()));
     };
 
     let mut metadata_map: HashMap<String, String> = HashMap::new();
@@ -98,21 +109,12 @@ mod tests {
     }
 
     #[test]
-    fn error_message_contains_filename_when_no_info_dict() {
+    fn error_is_no_info_dict_variant() {
         let filename = "tests/fixtures/no-info-dict.pdf";
-        let result = get_metadata(filename);
+        let err = get_metadata(filename).expect_err("expected error for PDF with no info dict");
         assert!(
-            result.is_err(),
-            "Expected an error for a PDF with no info dict"
-        );
-        let msg = result.expect_err("should fail").to_string();
-        assert!(
-            msg.starts_with("No info dictionary found in "),
-            "Error message should start with 'No info dictionary found in ', got: {msg}"
-        );
-        assert!(
-            msg.contains(filename),
-            "Error message should contain the filename '{filename}', got: {msg}"
+            matches!(err, PdfMetaError::NoInfoDict(ref f) if f == filename),
+            "expected NoInfoDict(\"{filename}\"), got: {err}"
         );
     }
 }

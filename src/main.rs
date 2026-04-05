@@ -1,6 +1,5 @@
 use clap::parser::ValueSource;
 use std::collections::HashMap;
-use std::error::Error;
 
 // Logging
 use env_logger::{Builder, Target};
@@ -19,7 +18,7 @@ mod walker;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// This is where the magic happens.
-fn run() -> Result<(), Box<dyn Error>> {
+fn run() -> anyhow::Result<()> {
     // Set up the command line. Ref https://docs.rs/clap for details.
     let cli_args = cli::build().get_matches();
 

@@ -1,7 +1,7 @@
 ---
 id: meta-07h
 title: Replace Box<dyn Error> with thiserror error enums
-status: open
+status: closed
 type: feature
 priority: 2
 tags:
