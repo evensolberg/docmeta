@@ -87,7 +87,8 @@ fn run() -> anyhow::Result<()> {
             let pattern = cli_args
                 .get_one::<String>("rename-pattern")
                 .unwrap_or(&empty_str);
-            let res = rename_file::rename_file(filename, &tags, pattern, dry_run)?;
+            let res = rename_file::rename_file(filename, &tags, pattern, dry_run)
+                .with_context(|| format!("failed to rename: {filename}"))?;
             if !quiet {
                 log::info!("{filename} --> {res}");
             }
