@@ -1,4 +1,5 @@
 use clap::parser::ValueSource;
+use std::collections::HashMap;
 use std::error::Error;
 
 // Logging
@@ -65,14 +66,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
         tags = if ext.eq_ignore_ascii_case("pdf") {
             log::info!("Processing PDF: {filename}");
-            let pdf_m = pdf::get_metadata(filename);
-            match pdf_m {
-                Ok(pdf_d) => pdf_d,
-                Err(e) => {
-                    log::error!("Error processing PDF: {filename}. Error: {e}");
-                    return Err(e);
-                }
-            }
+            pdf::get_metadata(filename)?
         } else if ext.eq_ignore_ascii_case("epub") {
             log::info!("Processing EPUB: {filename}");
             epub::get_metadata(filename)?
@@ -81,7 +75,7 @@ fn run() -> Result<(), Box<dyn Error>> {
             mobi::get_metadata(filename)?
         } else {
             log::warn!("Unknown file type: {filename}");
-            std::collections::HashMap::new()
+            HashMap::new()
         };
 
         log::debug!("tags: {tags:?}");

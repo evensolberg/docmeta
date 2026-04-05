@@ -97,8 +97,6 @@ mod tests {
 
     #[test]
     fn get_extension_preserves_original_case() {
-        // get_extension returns the extension as-is; callers use
-        // eq_ignore_ascii_case when matching, avoiding a forced allocation.
         assert_eq!(get_extension("BOOK.EPUB"), "EPUB");
         assert_eq!(get_extension("archive.TAR"), "TAR");
     }

@@ -6,7 +6,7 @@ use std::{collections::HashMap, error::Error};
 /// Returns `"Unknown"` when the option is `None` or the string cannot be decoded
 /// as UTF-8. Strips any embedded double-quote characters from the value.
 fn pdf_string_to_string(s: Option<&PdfString>) -> String {
-    s.and_then(|ps| ps.clone().to_string().ok())
+    s.and_then(|ps| ps.to_string().ok())
         .unwrap_or_else(|| "Unknown".to_owned())
         .replace('\"', "")
 }
