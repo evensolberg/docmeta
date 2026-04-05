@@ -15,12 +15,12 @@ use std::collections::HashMap;
 /// | Key | Source field |
 /// |-----|-------------|
 /// | `"Title"` | Book title |
-/// | `"Author"` | Author name, or empty string if absent |
-/// | `"Description"` | Book description, or empty string if absent |
-/// | `"Publisher"` | Publisher name, or empty string if absent |
-/// | `"Identifier"` | ISBN, or empty string if absent |
-/// | `"Date"` | Publish date string, or empty string if absent |
-/// | `"Year"` | Four-digit year extracted from `Date`, or empty string if absent |
+/// | `"Author"` | Author name, or `None` if absent |
+/// | `"Description"` | Book description, or `None` if absent |
+/// | `"Publisher"` | Publisher name, or `None` if absent |
+/// | `"Identifier"` | ISBN, or `None` if absent |
+/// | `"Date"` | Publish date string, or `None` if absent |
+/// | `"Year"` | Four-digit year extracted from `Date`, or `None` if absent |
 ///
 /// # Errors
 ///

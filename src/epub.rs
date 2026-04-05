@@ -24,8 +24,8 @@ use epub::doc::EpubDoc;
 /// * `Identifier` - The identifier of the EPUB file.
 /// * `Year` - The four-digit year extracted from `Date`.
 ///
-/// Keys are title-cased (e.g. `"Title"`, `"Author"`). If a metadata field is
-/// absent the key is still present in the map with an empty string value.
+/// Keys are title-cased (e.g. `"Title"`, `"Author"`). Values are `Option<String>`:
+/// `None` when the field is absent from the file, `Some(value)` otherwise.
 ///
 /// # Example
 ///
@@ -33,14 +33,14 @@ use epub::doc::EpubDoc;
 /// use std::collections::HashMap;
 /// use docmeta::epub::get_metadata;
 /// let metadata = get_metadata("tests/test.epub").unwrap();
-/// let mut expected_metadata: HashMap<String, String> = HashMap::new();
-/// expected_metadata.insert("Title".to_string(), "The Title".to_string());
-/// expected_metadata.insert("Author".to_string(), "The Author".to_string());
-/// expected_metadata.insert("Description".to_string(), "The Description".to_string());
-/// expected_metadata.insert("Publisher".to_string(), "The Publisher".to_string());
-/// expected_metadata.insert("Date".to_string(), "2021-01-01".to_string());
-/// expected_metadata.insert("Language".to_string(), "en".to_string());
-/// expected_metadata.insert("Identifier".to_string(), "urn:isbn:978-3-16-148410-0".to_string());
+/// let mut expected_metadata: HashMap<String, Option<String>> = HashMap::new();
+/// expected_metadata.insert("Title".to_string(), Some("The Title".to_string()));
+/// expected_metadata.insert("Author".to_string(), Some("The Author".to_string()));
+/// expected_metadata.insert("Description".to_string(), Some("The Description".to_string()));
+/// expected_metadata.insert("Publisher".to_string(), Some("The Publisher".to_string()));
+/// expected_metadata.insert("Date".to_string(), Some("2021-01-01".to_string()));
+/// expected_metadata.insert("Language".to_string(), Some("en".to_string()));
+/// expected_metadata.insert("Identifier".to_string(), Some("urn:isbn:978-3-16-148410-0".to_string()));
 /// assert_eq!(metadata, expected_metadata);
 /// ```
 ///

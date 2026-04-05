@@ -29,7 +29,7 @@ pub enum RenameError {
 /// **Parameters:**
 ///
 /// - `filename: &str` -- the name of the file to be renamed
-/// - `tags: &HashMap<String, String>` -- The metadata values (e.g. Title, Author, Year, Publisher).
+/// - `tags: &HashMap<String, Option<String>>` -- The metadata values (e.g. Title, Author, Year, Publisher). `None` values fall back to `"Unknown"` in the generated filename.
 /// - `pattern: &str` -- the tag pattern for the new filename. This has been validated to be OK by the CLI.
 /// - `dry_run: bool` -- if `true`, log what would happen but do not rename the file.
 ///

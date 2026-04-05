@@ -36,7 +36,8 @@ macro_rules! get_field {
 ///
 /// # Returns
 ///
-/// A [`HashMap`] containing the following keys (all `String` values):
+/// A [`HashMap`] containing the following keys. Values are `Option<String>`:
+/// `None` when the field is absent or cannot be decoded, `Some(value)` otherwise.
 ///
 /// | Key | Source field |
 /// |-----|-------------|
@@ -47,9 +48,6 @@ macro_rules! get_field {
 /// | `"Creator"` | `info.creator` |
 /// | `"Producer"` | `info.producer` |
 /// | `"Year"` | `info.creation_date.year` |
-///
-/// Fields absent from the PDF info dictionary are inserted with the value `"Unknown"`,
-/// except `"Year"` which is inserted as an empty string when the creation date is missing.
 ///
 /// # Errors
 ///
