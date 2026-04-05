@@ -1,7 +1,7 @@
 ---
 id: meta-h1i
 title: 'get_extension: return Cow or &str instead of owned String'
-status: open
+status: closed
 type: task
 priority: 2
 tags:
