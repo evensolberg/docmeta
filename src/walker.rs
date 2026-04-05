@@ -15,10 +15,11 @@ const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 /// The returned list follows the order of `inputs`: each input's contribution
 /// (the path itself for files, or the sorted directory contents for directories)
 /// is appended when that input is encountered.
-pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
+pub fn collect_files<S: AsRef<str>>(inputs: &[S], recursive: bool) -> Vec<String> {
     let mut result = Vec::new();
 
     for input in inputs {
+        let input = input.as_ref();
         let meta = match std::fs::metadata(input) {
             Ok(meta) => meta,
             Err(err) => {
@@ -28,7 +29,7 @@ pub fn collect_files(inputs: &[String], recursive: bool) -> Vec<String> {
         };
 
         if meta.is_file() {
-            result.push(input.clone());
+            result.push(input.to_owned());
         } else if meta.is_dir() {
             if !recursive {
                 log::warn!("Directory skipped (use --recursive to traverse): {input}");
@@ -78,6 +79,15 @@ mod tests {
     use super::*;
     use std::fs;
     use tempfile::tempdir;
+
+    // ── &[&str] accepted without allocation ──────────────────────────────────
+
+    #[test]
+    fn accepts_str_literals_without_string_allocation() {
+        // Passes &[&str] directly — would not compile with the old &[String] signature.
+        let result = collect_files(&["nonexistent_xyz_path"], false);
+        assert!(result.is_empty());
+    }
 
     // ── non-existent path ────────────────────────────────────────────────────
 

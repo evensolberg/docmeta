@@ -1,7 +1,7 @@
 ---
 id: meta-m83
 title: 'collect_files: accept &[impl AsRef<str>] instead of &[String]'
-status: open
+status: closed
 type: feature
 priority: 2
 tags:

@@ -47,14 +47,11 @@ fn run() -> anyhow::Result<()> {
     // Initialize logging
     logbuilder.target(Target::Stdout).init();
 
-    let files = walker::collect_files(
-        &cli_args
-            .get_many::<String>("read")
-            .unwrap_or_default()
-            .cloned()
-            .collect::<Vec<_>>(),
-        recursive,
-    );
+    let inputs: Vec<&String> = cli_args
+        .get_many::<String>("read")
+        .unwrap_or_default()
+        .collect();
+    let files = walker::collect_files(&inputs, recursive);
 
     // Initialize variables
     let mut tags;
