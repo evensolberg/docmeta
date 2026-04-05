@@ -6,7 +6,9 @@ const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 ///
 /// Each entry in `inputs` is treated as follows:
 ///
-/// - **File**: included as-is (regardless of extension or `recursive`).
+/// - **File**: included as-is (regardless of extension or `recursive`), unless its
+///   path is not valid UTF-8, in which case it is skipped with a warning (the return
+///   type `Vec<String>` cannot represent non-UTF-8 paths).
 /// - **Directory** with `recursive = true`: walked depth-first; only files
 ///   whose extensions appear in [`SUPPORTED_EXTENSIONS`] are included.
 /// - **Directory** with `recursive = false`: skipped with a warning.
