@@ -15,7 +15,7 @@ const SUPPORTED_EXTENSIONS: &[&str] = &["epub", "mobi", "pdf"];
 /// The returned list follows the order of `inputs`: each input's contribution
 /// (the path itself for files, or the sorted directory contents for directories)
 /// is appended when that input is encountered.
-pub fn collect_files<S: AsRef<str>>(inputs: &[S], recursive: bool) -> Vec<String> {
+pub fn collect_files<S: AsRef<std::path::Path>>(inputs: &[S], recursive: bool) -> Vec<String> {
     let mut result = Vec::new();
 
     for input in inputs {
@@ -23,16 +23,19 @@ pub fn collect_files<S: AsRef<str>>(inputs: &[S], recursive: bool) -> Vec<String
         let meta = match std::fs::metadata(input) {
             Ok(meta) => meta,
             Err(err) => {
-                log::warn!("Failed to stat path, skipping: {input} ({err})");
+                log::warn!("Failed to stat path, skipping: {} ({err})", input.display());
                 continue;
             }
         };
 
         if meta.is_file() {
-            result.push(input.to_owned());
+            match input.to_str() {
+                Some(s) => result.push(s.to_owned()),
+                None => log::warn!("Skipping non-UTF-8 path: {}", input.display()),
+            }
         } else if meta.is_dir() {
             if !recursive {
-                log::warn!("Directory skipped (use --recursive to traverse): {input}");
+                log::warn!("Directory skipped (use --recursive to traverse): {}", input.display());
                 continue;
             }
             for entry in WalkDir::new(input)
@@ -67,7 +70,7 @@ pub fn collect_files<S: AsRef<str>>(inputs: &[S], recursive: bool) -> Vec<String
                 }
             }
         } else {
-            log::warn!("Skipping unsupported file type (not a file or directory): {input}");
+            log::warn!("Skipping unsupported file type (not a file or directory): {}", input.display());
         }
     }
 
@@ -80,10 +83,21 @@ mod tests {
     use std::fs;
     use tempfile::tempdir;
 
-    // ── &[&str] accepted without allocation ──────────────────────────────────
+    // ── &[&str] / &[Path] accepted (generic bound) ───────────────────────────
 
     #[test]
-    fn accepts_str_literals_without_string_allocation() {
+    fn str_slice_with_real_file_is_returned() {
+        // Passes &[&str] directly — the generic bound accepts any AsRef<Path>.
+        let dir = tempdir().expect("temp dir");
+        let file = dir.path().join("book.epub");
+        fs::write(&file, b"").expect("write");
+        let path = file.to_string_lossy().into_owned();
+        let result = collect_files(&[path.as_str()], false);
+        assert_eq!(result, vec![path]);
+    }
+
+    #[test]
+    fn str_slice_with_nonexistent_path_returns_empty() {
         let result = collect_files(&["nonexistent_xyz_path"], false);
         assert!(result.is_empty());
     }
