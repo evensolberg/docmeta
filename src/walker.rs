@@ -85,7 +85,7 @@ mod tests {
     use std::fs;
     use tempfile::tempdir;
 
-    // ── &[&str] / &[Path] accepted (generic bound) ───────────────────────────
+    // ── &[&str] / other AsRef<Path> inputs accepted (generic bound) ──────────
 
     #[test]
     fn str_slice_with_real_file_is_returned() {
