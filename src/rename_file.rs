@@ -3,7 +3,7 @@ use std::{
     collections::HashMap,
     error::Error,
     path::Path,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 /// Renames the file provided based on the pattern provided.
@@ -131,6 +131,7 @@ fn unique_value_from(time: SystemTime) -> u128 {
 mod tests {
     use super::*;
     use std::fs;
+    use std::time::Duration;
     use tempfile::NamedTempFile;
 
     fn tags(pairs: &[(&str, &str)]) -> HashMap<String, String> {
