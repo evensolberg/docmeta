@@ -1,14 +1,14 @@
 ---
 id: meta-xdh
 title: 'rename_file: chained .replace() calls produce many intermediate Strings'
-status: open
+status: closed
 type: task
 priority: 3
 tags:
 - rename_file
 - allocations
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-05
 dependencies: []
 ---
 

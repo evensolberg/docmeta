@@ -1,14 +1,14 @@
 ---
 id: meta-cfz
 title: 'rename_file: to_string_lossy() called multiple times on same path'
-status: open
+status: closed
 type: task
 priority: 3
 tags:
 - rename_file
 - allocations
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-05
 dependencies: []
 ---
 
