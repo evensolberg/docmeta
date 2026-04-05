@@ -1,18 +1,20 @@
 use pdf::primitive::PdfString;
 use std::{collections::HashMap, error::Error};
 
-/// Extract a named field from a PDF info dictionary into `$mm`.
+/// Convert an optional [`PdfString`] reference to a plain [`String`].
 ///
-/// Falls back to `"Unknown"` when the field is absent or cannot be converted to a
-/// UTF-8 string, and strips any embedded double-quote characters from the value.
+/// Returns `"Unknown"` when the option is `None` or the string cannot be decoded
+/// as UTF-8. Strips any embedded double-quote characters from the value.
+fn pdf_string_to_string(s: Option<&PdfString>) -> String {
+    s.and_then(|ps| ps.clone().to_string().ok())
+        .unwrap_or_else(|| "Unknown".to_owned())
+        .replace('\"', "")
+}
+
+/// Extract a named field from a PDF info dictionary into `$mm`.
 macro_rules! get_field {
     ($id:ident, $field:ident, $mm:ident, $key:literal) => {
-        let mut $field = <Option<PdfString> as Clone>::clone(&$id.$field)
-            .unwrap_or(PdfString::from("Unknown"))
-            .to_string()
-            .unwrap_or(String::from("Unknown"));
-        $field = $field.replace('\"', "");
-        $mm.insert($key.to_string(), $field);
+        $mm.insert($key.to_string(), pdf_string_to_string($id.$field.as_ref()));
     };
 }
 
@@ -76,6 +78,24 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, Box<dyn E
 #[cfg(test)]
 mod tests {
     use super::*;
+    use pdf::primitive::PdfString;
+
+    #[test]
+    fn pdf_string_to_string_returns_unknown_for_none() {
+        assert_eq!(pdf_string_to_string(None), "Unknown");
+    }
+
+    #[test]
+    fn pdf_string_to_string_returns_value_for_some() {
+        let ps = PdfString::from("Rust Programming");
+        assert_eq!(pdf_string_to_string(Some(&ps)), "Rust Programming");
+    }
+
+    #[test]
+    fn pdf_string_to_string_strips_double_quotes() {
+        let ps = PdfString::from("He said \"hello\"");
+        assert_eq!(pdf_string_to_string(Some(&ps)), "He said hello");
+    }
 
     #[test]
     fn error_message_contains_filename_when_no_info_dict() {
