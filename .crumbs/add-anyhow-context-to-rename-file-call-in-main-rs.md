@@ -1,7 +1,7 @@
 ---
 id: meta-qw9
 title: Add anyhow::Context to rename_file call in main.rs
-status: open
+status: closed
 type: feature
 priority: 3
 tags:
