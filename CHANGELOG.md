@@ -2,20 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] - 2026-04-04
+## [unreleased]
 
-### Features
+### Chore
 
-- Add `--recursive` / `-R` flag to traverse directories and collect all supported ebook files
-- New `walker` module with `collect_files` helper; 11 unit tests covering files, dirs, mixed inputs, extension filtering, and case-insensitivity
+- Housekeeping
+- Migrate to Rust edition 2024 (#22)
 
-## [0.3.6] - 2026-04-04
+### Docs
+
+- Fix stale doc comment in rename_file (#14)
+- Add rustdoc to pdf, mobi, utils, and cli modules (#17)
+
+### Feat
+
+- Harden filename character sanitisation (#19)
+- Add GitHub Actions CI workflow + bump to v0.3.6 (#20)
+- Add --recursive/-R flag for directory traversal (v0.4.0) (#21)
+
+### Fix
+
+- Repair epub 2.1.5 API break and pdf error interpolation (#12)
+- Replace panicking byte-slice with safe .get() in get_year (#13)
+- Correct get_unique_value doc comment and add test (#15)
 
 ### Refactor
 
+- Replace `Box<dyn Error>` with typed `thiserror` enums (`PdfMetaError`, `RenameError`) and `anyhow::Result` for propagation-only modules (#25)
+- Extract `pdf_string_to_string` helper and make `get_extension` return `&str` (#24)
 - PDF crate update (#6)
-- EPUB and MOBI modules now extract `Year` internally; `main` no longer needs format-specific date logic
-- `get_year` simplified — the `D:`-prefix PDF date branch was dead code (PDF module uses native date parsing)
+- Move Year extraction into epub/mobi modules + README updates (#18)
+
+### Test
+
+- Add test coverage for rename_file module (#16)
 
 ## [0.3.2] - 2024-01-28
 

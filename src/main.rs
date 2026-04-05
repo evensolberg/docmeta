@@ -1,6 +1,6 @@
+use anyhow::Context as _;
 use clap::parser::ValueSource;
 use std::collections::HashMap;
-use std::error::Error;
 
 // Logging
 use env_logger::{Builder, Target};
@@ -19,7 +19,7 @@ mod walker;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// This is where the magic happens.
-fn run() -> Result<(), Box<dyn Error>> {
+fn run() -> anyhow::Result<()> {
     // Set up the command line. Ref https://docs.rs/clap for details.
     let cli_args = cli::build().get_matches();
 
@@ -66,13 +66,15 @@ fn run() -> Result<(), Box<dyn Error>> {
 
         tags = if ext.eq_ignore_ascii_case("pdf") {
             log::info!("Processing PDF: {filename}");
-            pdf::get_metadata(filename)?
+            pdf::get_metadata(filename).with_context(|| format!("failed to read PDF: {filename}"))?
         } else if ext.eq_ignore_ascii_case("epub") {
             log::info!("Processing EPUB: {filename}");
-            epub::get_metadata(filename)?
+            epub::get_metadata(filename)
+                .with_context(|| format!("failed to read EPUB: {filename}"))?
         } else if ext.eq_ignore_ascii_case("mobi") {
             log::info!("Processing MOBI: {filename}");
-            mobi::get_metadata(filename)?
+            mobi::get_metadata(filename)
+                .with_context(|| format!("failed to read MOBI: {filename}"))?
         } else {
             log::warn!("Unknown file type: {filename}");
             HashMap::new()
