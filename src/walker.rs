@@ -84,7 +84,6 @@ mod tests {
 
     #[test]
     fn accepts_str_literals_without_string_allocation() {
-        // Passes &[&str] directly — would not compile with the old &[String] signature.
         let result = collect_files(&["nonexistent_xyz_path"], false);
         assert!(result.is_empty());
     }
