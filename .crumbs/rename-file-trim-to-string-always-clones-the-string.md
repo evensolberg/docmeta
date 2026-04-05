@@ -1,14 +1,14 @@
 ---
 id: meta-wvv
 title: 'rename_file: trim().to_string() always clones the string'
-status: open
+status: closed
 type: task
 priority: 3
 tags:
 - rename_file
 - allocations
 created: 2026-04-04
-updated: 2026-04-04
+updated: 2026-04-05
 dependencies: []
 ---
 

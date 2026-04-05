@@ -84,17 +84,22 @@ pub fn rename_file(
             .unwrap_or("Unknown"),
     );
 
-    // Semantic replacements: preserve readability where possible.
-    new_filename = new_filename.replace('/', "-");
-    new_filename = new_filename.replace('\\', "-");
-    new_filename = new_filename.replace(':', " -");
-    new_filename = new_filename.replace('.', "");
+    // Single-pass sanitisation combining semantic replacements and forbidden-char removal.
+    // Avoids the intermediate Strings produced by chained .replace() calls.
+    // Reserve exact worst-case capacity: each ':' expands from one byte to the two-byte " -".
+    let extra_capacity = new_filename.bytes().filter(|&b| b == b':').count();
+    let mut sanitised = String::with_capacity(new_filename.len() + extra_capacity);
+    for ch in new_filename.chars() {
+        match ch {
+            '/' | '\\' => sanitised.push('-'),
+            ':' => sanitised.push_str(" -"),
+            // Dots removed for readability; rest are forbidden on Windows or universally invalid.
+            '.' | '*' | '?' | '"' | '<' | '>' | '|' | '\0' => {}
+            ch => sanitised.push(ch),
+        }
+    }
+    new_filename = sanitised;
 
-    // Strip characters forbidden on Windows or universally invalid in filenames
-    // (e.g. NUL is rejected by every OS).
-    new_filename.retain(|ch| !matches!(ch, '*' | '?' | '"' | '<' | '>' | '|' | '\0'));
-
-    // Remove leading or trailing spaces
     new_filename = new_filename.trim().to_string();
 
     if new_filename.is_empty() {
@@ -112,10 +117,13 @@ pub fn rename_file(
         parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
     log::debug!("new_path = {}", new_path.display());
 
-    // Return if the new filename is the same as the old
-    if new_path.to_string_lossy() == filename {
-        log::debug!("New filename == old filename. Returning.");
-        return Ok(new_path.to_string_lossy().into_owned());
+    // Return if the new filename is the same as the old.
+    {
+        let s = new_path.to_string_lossy();
+        if s == filename {
+            log::debug!("New filename == old filename. Returning.");
+            return Ok(s.into_owned());
+        }
     }
 
     // Check if a file with the new filename already exists - make the filename unique if it does.
@@ -126,14 +134,11 @@ pub fn rename_file(
             parent.join(Path::new(&new_filename).with_extension(utils::get_extension(filename)));
     }
 
-    // Perform the actual rename and check the outcome
     if dry_run {
         log::debug!("dry_run: {filename} --> {}", new_path.display());
     } else {
-        // Get parent dir
-        let rn_res = std::fs::rename(filename, &new_path);
-        match rn_res {
-            Ok(()) => log::debug!("{filename} --> {}", new_path.to_string_lossy()),
+        match std::fs::rename(filename, &new_path) {
+            Ok(()) => log::debug!("{filename} --> {}", new_path.display()),
             Err(source) => {
                 return Err(RenameError::RenameFailed {
                     from: filename.to_owned(),
@@ -144,9 +149,7 @@ pub fn rename_file(
         }
     }
 
-    // return safely
-    let result = new_path.to_string_lossy().into_owned();
-    Ok(result)
+    Ok(new_path.to_string_lossy().into_owned())
 }
 
 /// Upper bound (exclusive) for the de-collision value: total microseconds relative to
@@ -338,6 +341,24 @@ mod tests {
         assert!(
             matches!(err, RenameError::RenameFailed { .. }),
             "expected RenameFailed, got: {err}"
+        );
+    }
+
+    // ── whitespace trimming ──────────────────────────────────────────────────
+
+    #[test]
+    fn leading_and_trailing_spaces_in_tag_are_trimmed() {
+        // dry_run=true — no real file needed; exercises the trim path only.
+        let t = tags(&[("Title", "  Spaced Title  ")]);
+        let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
+        let stem = std::path::Path::new(&result)
+            .file_stem()
+            .unwrap()
+            .to_str()
+            .unwrap();
+        assert_eq!(
+            stem, "Spaced Title",
+            "spaces not trimmed correctly: {result}"
         );
     }
 
