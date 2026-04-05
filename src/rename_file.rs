@@ -112,8 +112,12 @@ pub fn rename_file(
     Ok(result)
 }
 
-/// Returns a unique numeric identifier (range `0–9_999_999`) derived from the microsecond
-/// component of the current duration relative to `UNIX_EPOCH`. Used to de-collide file names.
+/// Upper bound (exclusive) for the de-collision value: total microseconds relative to
+/// `UNIX_EPOCH` modulo this constant, giving a ~10-second window of unique values.
+const UNIQUE_VALUE_MODULUS: u128 = 10_000_000;
+
+/// Returns a unique numeric identifier in `0..UNIQUE_VALUE_MODULUS` derived from the
+/// total microseconds elapsed relative to `UNIX_EPOCH`. Used to de-collide file names.
 /// The implementation can be swapped (e.g. for an RNG) without affecting callers.
 fn get_unique_value() -> u128 {
     unique_value_from(SystemTime::now())
@@ -124,11 +128,12 @@ fn get_unique_value() -> u128 {
 /// For times on or after `UNIX_EPOCH`, uses `time.duration_since(UNIX_EPOCH)`.
 /// For times before `UNIX_EPOCH`, falls back to the error's duration (the magnitude
 /// of the pre-epoch offset), so the result still varies rather than being a constant.
+/// The total microseconds are reduced modulo [`UNIQUE_VALUE_MODULUS`].
 fn unique_value_from(time: SystemTime) -> u128 {
     time.duration_since(UNIX_EPOCH)
         .unwrap_or_else(|e| e.duration())
         .as_micros()
-        % 10_000_000
+        % UNIQUE_VALUE_MODULUS
 }
 
 #[cfg(test)]
@@ -148,10 +153,13 @@ mod tests {
     // ── get_unique_value ────────────────────────────────────────────────────
 
     #[test]
-    fn unique_value_is_within_seven_digits() {
+    fn unique_value_is_within_range() {
         for _ in 0..100 {
             let val = get_unique_value();
-            assert!(val < 10_000_000, "expected < 10_000_000, got {val}");
+            assert!(
+                val < UNIQUE_VALUE_MODULUS,
+                "expected < {UNIQUE_VALUE_MODULUS}, got {val}"
+            );
         }
     }
 
@@ -159,13 +167,16 @@ mod tests {
     fn unique_value_from_before_epoch_is_in_range() {
         // Exercises the Err branch: a time before UNIX_EPOCH causes
         // duration_since to fail; unique_value_from must still return a value
-        // in 0..10_000_000 rather than panicking.
+        // in 0..UNIQUE_VALUE_MODULUS rather than panicking.
         // checked_sub guards against platforms that don't support pre-epoch times.
         let Some(before_epoch) = UNIX_EPOCH.checked_sub(Duration::from_secs(1)) else {
             return;
         };
         let val = unique_value_from(before_epoch);
-        assert!(val < 10_000_000, "expected < 10_000_000, got {val}");
+        assert!(
+            val < UNIQUE_VALUE_MODULUS,
+            "expected < {UNIQUE_VALUE_MODULUS}, got {val}"
+        );
     }
 
     // ── error paths ─────────────────────────────────────────────────────────
