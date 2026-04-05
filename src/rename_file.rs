@@ -3,7 +3,7 @@ use std::{
     collections::HashMap,
     error::Error,
     path::Path,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 /// Renames the file provided based on the pattern provided.
@@ -118,7 +118,7 @@ pub fn rename_file(
 fn get_unique_value() -> u128 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards. You probably have bigger things to worry about.")
+        .unwrap_or(Duration::ZERO)
         .as_micros()
         % 10_000_000
 }
