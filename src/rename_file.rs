@@ -38,7 +38,7 @@ pub enum RenameError {
 /// **Returns**
 ///
 /// - The new file name if successful
-/// - An error message if unsuccessful.
+/// - A [`RenameError`] variant indicating what failed.
 pub fn rename_file(
     filename: &str,
     tags: &HashMap<String, String>,
@@ -131,7 +131,7 @@ pub fn rename_file(
 }
 
 /// Upper bound (exclusive) for the de-collision value: total microseconds relative to
-/// `UNIX_EPOCH` modulo this constant, giving a ~10-second window of unique values.
+/// `UNIX_EPOCH` modulo this constant, giving a 10-second window of unique values.
 const UNIQUE_VALUE_MODULUS: u128 = 10_000_000;
 
 /// Returns a unique numeric identifier in `0..UNIQUE_VALUE_MODULUS` derived from the
@@ -309,6 +309,18 @@ mod tests {
         assert!(
             !result.contains('\0'),
             "NUL byte present in result: {result}"
+        );
+    }
+
+    #[test]
+    fn rename_to_nonexistent_parent_returns_rename_failed() {
+        // Trigger a filesystem error by targeting a directory that does not exist.
+        let t = tags(&[("Title", "SomeTitle")]);
+        let err = rename_file("nonexistent_dir/source.epub", &t, "%t", false)
+            .expect_err("should fail");
+        assert!(
+            matches!(err, RenameError::RenameFailed { .. }),
+            "expected RenameFailed, got: {err}"
         );
     }
 

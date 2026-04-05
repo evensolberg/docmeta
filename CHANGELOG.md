@@ -28,6 +28,8 @@ All notable changes to this project will be documented in this file.
 
 ### Refactor
 
+- Replace `Box<dyn Error>` with typed `thiserror` enums (`PdfMetaError`, `RenameError`) and `anyhow::Result` for propagation-only modules (#25)
+- Extract `pdf_string_to_string` helper and make `get_extension` return `&str` (#24)
 - PDF crate update (#6)
 - Move Year extraction into epub/mobi modules + README updates (#18)
 

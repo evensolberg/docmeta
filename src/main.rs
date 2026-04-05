@@ -1,3 +1,4 @@
+use anyhow::Context as _;
 use clap::parser::ValueSource;
 use std::collections::HashMap;
 
@@ -65,13 +66,15 @@ fn run() -> anyhow::Result<()> {
 
         tags = if ext.eq_ignore_ascii_case("pdf") {
             log::info!("Processing PDF: {filename}");
-            pdf::get_metadata(filename)?
+            pdf::get_metadata(filename).with_context(|| format!("failed to read PDF: {filename}"))?
         } else if ext.eq_ignore_ascii_case("epub") {
             log::info!("Processing EPUB: {filename}");
-            epub::get_metadata(filename)?
+            epub::get_metadata(filename)
+                .with_context(|| format!("failed to read EPUB: {filename}"))?
         } else if ext.eq_ignore_ascii_case("mobi") {
             log::info!("Processing MOBI: {filename}");
-            mobi::get_metadata(filename)?
+            mobi::get_metadata(filename)
+                .with_context(|| format!("failed to read MOBI: {filename}"))?
         } else {
             log::warn!("Unknown file type: {filename}");
             HashMap::new()
