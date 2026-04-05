@@ -74,9 +74,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, Option<String>>, P
 
     metadata_map.insert(
         "Year".to_string(),
-        info.creation_date
-            .as_ref()
-            .map(|d| d.year.to_string()),
+        info.creation_date.as_ref().map(|d| d.year.to_string()),
     );
 
     log::debug!("metadata_map: {metadata_map:?}");
@@ -97,13 +95,19 @@ mod tests {
     #[test]
     fn pdf_string_to_string_returns_some_for_present_value() {
         let ps = PdfString::from("Rust Programming");
-        assert_eq!(pdf_string_to_string(Some(&ps)), Some("Rust Programming".to_owned()));
+        assert_eq!(
+            pdf_string_to_string(Some(&ps)),
+            Some("Rust Programming".to_owned())
+        );
     }
 
     #[test]
     fn pdf_string_to_string_strips_double_quotes() {
         let ps = PdfString::from("He said \"hello\"");
-        assert_eq!(pdf_string_to_string(Some(&ps)), Some("He said hello".to_owned()));
+        assert_eq!(
+            pdf_string_to_string(Some(&ps)),
+            Some("He said hello".to_owned())
+        );
     }
 
     #[test]

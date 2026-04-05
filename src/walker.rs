@@ -37,7 +37,10 @@ pub fn collect_files<S: AsRef<std::path::Path>>(inputs: &[S], recursive: bool) -
             }
         } else if meta.is_dir() {
             if !recursive {
-                log::warn!("Directory skipped (use --recursive to traverse): {}", input.display());
+                log::warn!(
+                    "Directory skipped (use --recursive to traverse): {}",
+                    input.display()
+                );
                 continue;
             }
             for entry in WalkDir::new(input)
@@ -72,7 +75,10 @@ pub fn collect_files<S: AsRef<std::path::Path>>(inputs: &[S], recursive: bool) -
                 }
             }
         } else {
-            log::warn!("Skipping unsupported file type (not a file or directory): {}", input.display());
+            log::warn!(
+                "Skipping unsupported file type (not a file or directory): {}",
+                input.display()
+            );
         }
     }
 

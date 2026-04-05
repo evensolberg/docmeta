@@ -53,11 +53,36 @@ pub fn rename_file(
     let mut new_filename = pattern.to_string();
 
     // replace any options (eg. %aa, %tg) with the corresponding tag
-    new_filename = new_filename.replace("%t", tags.get("Title").and_then(Option::as_deref).unwrap_or("Unknown"));
-    new_filename = new_filename.replace("%a", tags.get("Author").and_then(Option::as_deref).unwrap_or("Unknown"));
-    new_filename = new_filename.replace("%p", tags.get("Publisher").and_then(Option::as_deref).unwrap_or("Unknown"));
-    new_filename = new_filename.replace("%i", tags.get("Identifier").and_then(Option::as_deref).unwrap_or("Unknown"));
-    new_filename = new_filename.replace("%y", tags.get("Year").and_then(Option::as_deref).unwrap_or("Unknown"));
+    new_filename = new_filename.replace(
+        "%t",
+        tags.get("Title")
+            .and_then(Option::as_deref)
+            .unwrap_or("Unknown"),
+    );
+    new_filename = new_filename.replace(
+        "%a",
+        tags.get("Author")
+            .and_then(Option::as_deref)
+            .unwrap_or("Unknown"),
+    );
+    new_filename = new_filename.replace(
+        "%p",
+        tags.get("Publisher")
+            .and_then(Option::as_deref)
+            .unwrap_or("Unknown"),
+    );
+    new_filename = new_filename.replace(
+        "%i",
+        tags.get("Identifier")
+            .and_then(Option::as_deref)
+            .unwrap_or("Unknown"),
+    );
+    new_filename = new_filename.replace(
+        "%y",
+        tags.get("Year")
+            .and_then(Option::as_deref)
+            .unwrap_or("Unknown"),
+    );
 
     // Semantic replacements: preserve readability where possible.
     new_filename = new_filename.replace('/', "-");
@@ -195,16 +220,14 @@ mod tests {
 
     #[test]
     fn empty_pattern_returns_error() {
-        let err = rename_file("some_file.epub", &tags(&[]), "", false)
-            .expect_err("should fail");
+        let err = rename_file("some_file.epub", &tags(&[]), "", false).expect_err("should fail");
         assert!(matches!(err, RenameError::EmptyPattern));
     }
 
     #[test]
     fn pattern_that_sanitises_to_empty_returns_error() {
         // Pattern "." becomes "" after the '.' sanitisation step
-        let err = rename_file("some_file.epub", &tags(&[]), ".", false)
-            .expect_err("should fail");
+        let err = rename_file("some_file.epub", &tags(&[]), ".", false).expect_err("should fail");
         assert!(matches!(err, RenameError::EmptyResult));
     }
 
@@ -290,8 +313,8 @@ mod tests {
     #[test]
     fn pattern_of_only_forbidden_chars_returns_error() {
         // After stripping forbidden chars the stem is empty → error
-        let err = rename_file("placeholder.epub", &tags(&[]), "*<>", false)
-            .expect_err("should fail");
+        let err =
+            rename_file("placeholder.epub", &tags(&[]), "*<>", false).expect_err("should fail");
         assert!(matches!(err, RenameError::EmptyResult));
     }
 
@@ -310,8 +333,8 @@ mod tests {
     fn rename_to_nonexistent_parent_returns_rename_failed() {
         // Trigger a filesystem error by targeting a directory that does not exist.
         let t = tags(&[("Title", "SomeTitle")]);
-        let err = rename_file("nonexistent_dir/source.epub", &t, "%t", false)
-            .expect_err("should fail");
+        let err =
+            rename_file("nonexistent_dir/source.epub", &t, "%t", false).expect_err("should fail");
         assert!(
             matches!(err, RenameError::RenameFailed { .. }),
             "expected RenameFailed, got: {err}"

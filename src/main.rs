@@ -63,7 +63,8 @@ fn run() -> anyhow::Result<()> {
 
         tags = if ext.eq_ignore_ascii_case("pdf") {
             log::info!("Processing PDF: {filename}");
-            pdf::get_metadata(filename).with_context(|| format!("failed to read PDF: {filename}"))?
+            pdf::get_metadata(filename)
+                .with_context(|| format!("failed to read PDF: {filename}"))?
         } else if ext.eq_ignore_ascii_case("epub") {
             log::info!("Processing EPUB: {filename}");
             epub::get_metadata(filename)
