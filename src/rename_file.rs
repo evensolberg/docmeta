@@ -86,8 +86,9 @@ pub fn rename_file(
 
     // Single-pass sanitisation combining semantic replacements and forbidden-char removal.
     // Avoids the intermediate Strings produced by chained .replace() calls.
-    // Capacity is a lower-bound hint; ':' expands to two chars so may trigger one realloc.
-    let mut sanitised = String::with_capacity(new_filename.len());
+    // Reserve exact worst-case capacity: each ':' expands from one byte to the two-byte " -".
+    let extra_capacity = new_filename.bytes().filter(|&b| b == b':').count();
+    let mut sanitised = String::with_capacity(new_filename.len() + extra_capacity);
     for ch in new_filename.chars() {
         match ch {
             '/' | '\\' => sanitised.push('-'),
