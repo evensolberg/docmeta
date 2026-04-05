@@ -10,7 +10,8 @@ use std::collections::HashMap;
 ///
 /// # Returns
 ///
-/// A [`HashMap`] containing the following keys (all `String` values):
+/// A [`HashMap`] containing the following keys. Values are `Option<String>`:
+/// `None` when the field is absent, `Some(value)` otherwise.
 ///
 /// | Key | Source field |
 /// |-----|-------------|

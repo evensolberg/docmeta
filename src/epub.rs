@@ -41,6 +41,7 @@ use epub::doc::EpubDoc;
 /// expected_metadata.insert("Date".to_string(), Some("2021-01-01".to_string()));
 /// expected_metadata.insert("Language".to_string(), Some("en".to_string()));
 /// expected_metadata.insert("Identifier".to_string(), Some("urn:isbn:978-3-16-148410-0".to_string()));
+/// expected_metadata.insert("Year".to_string(), Some("2021".to_string()));
 /// assert_eq!(metadata, expected_metadata);
 /// ```
 ///
