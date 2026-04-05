@@ -1,7 +1,7 @@
 ---
 id: meta-akx
 title: 'Metadata HashMap: replace "Unknown" sentinel with Option<String>'
-status: open
+status: closed
 type: feature
 priority: 2
 tags:

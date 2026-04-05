@@ -29,7 +29,7 @@ pub enum RenameError {
 /// **Parameters:**
 ///
 /// - `filename: &str` -- the name of the file to be renamed
-/// - `tags: &HashMap<String, String>` -- The metadata values (e.g. Title, Author, Year, Publisher).
+/// - `tags: &HashMap<String, Option<String>>` -- The metadata values (e.g. Title, Author, Year, Publisher). `None` values fall back to `"Unknown"` in the generated filename.
 /// - `pattern: &str` -- the tag pattern for the new filename. This has been validated to be OK by the CLI.
 /// - `dry_run: bool` -- if `true`, log what would happen but do not rename the file.
 ///
@@ -41,7 +41,7 @@ pub enum RenameError {
 /// - A [`RenameError`] variant indicating what failed.
 pub fn rename_file(
     filename: &str,
-    tags: &HashMap<String, String>,
+    tags: &HashMap<String, Option<String>>,
     pattern: &str,
     dry_run: bool,
 ) -> Result<String, RenameError> {
@@ -53,17 +53,11 @@ pub fn rename_file(
     let mut new_filename = pattern.to_string();
 
     // replace any options (eg. %aa, %tg) with the corresponding tag
-    new_filename = new_filename.replace("%t", tags.get("Title").map_or("Unknown", String::as_str));
-    new_filename = new_filename.replace("%a", tags.get("Author").map_or("Unknown", String::as_str));
-    new_filename = new_filename.replace(
-        "%p",
-        tags.get("Publisher").map_or("Unknown", String::as_str),
-    );
-    new_filename = new_filename.replace(
-        "%i",
-        tags.get("Identifier").map_or("Unknown", String::as_str),
-    );
-    new_filename = new_filename.replace("%y", tags.get("Year").map_or("Unknown", String::as_str));
+    new_filename = new_filename.replace("%t", tags.get("Title").and_then(Option::as_deref).unwrap_or("Unknown"));
+    new_filename = new_filename.replace("%a", tags.get("Author").and_then(Option::as_deref).unwrap_or("Unknown"));
+    new_filename = new_filename.replace("%p", tags.get("Publisher").and_then(Option::as_deref).unwrap_or("Unknown"));
+    new_filename = new_filename.replace("%i", tags.get("Identifier").and_then(Option::as_deref).unwrap_or("Unknown"));
+    new_filename = new_filename.replace("%y", tags.get("Year").and_then(Option::as_deref).unwrap_or("Unknown"));
 
     // Semantic replacements: preserve readability where possible.
     new_filename = new_filename.replace('/', "-");
@@ -161,10 +155,10 @@ mod tests {
     use std::time::Duration;
     use tempfile::NamedTempFile;
 
-    fn tags(pairs: &[(&str, &str)]) -> HashMap<String, String> {
+    fn tags(pairs: &[(&str, &str)]) -> HashMap<String, Option<String>> {
         pairs
             .iter()
-            .map(|(k, v)| ((*k).to_string(), (*v).to_string()))
+            .map(|(k, v)| ((*k).to_string(), Some((*v).to_string())))
             .collect()
     }
 

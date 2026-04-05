@@ -12,14 +12,13 @@ pub enum PdfMetaError {
     NoInfoDict(String),
 }
 
-/// Convert an optional [`PdfString`] reference to a plain [`String`].
+/// Convert an optional [`PdfString`] reference to an `Option<String>`.
 ///
-/// Returns `"Unknown"` when the option is `None` or the string cannot be decoded
-/// as UTF-8. Strips any embedded double-quote characters from the value.
-fn pdf_string_to_string(s: Option<&PdfString>) -> String {
+/// Returns `None` when the option is `None` or the string cannot be decoded as
+/// UTF-8. Strips any embedded double-quote characters from the value.
+fn pdf_string_to_string(s: Option<&PdfString>) -> Option<String> {
     s.and_then(|ps| ps.to_string().ok())
-        .unwrap_or_else(|| "Unknown".to_owned())
-        .replace('\"', "")
+        .map(|v| v.replace('\"', ""))
 }
 
 /// Extract a named field from a PDF info dictionary into `$mm`.
@@ -37,7 +36,8 @@ macro_rules! get_field {
 ///
 /// # Returns
 ///
-/// A [`HashMap`] containing the following keys (all `String` values):
+/// A [`HashMap`] containing the following keys. Values are `Option<String>`:
+/// `None` when the field is absent or cannot be decoded, `Some(value)` otherwise.
 ///
 /// | Key | Source field |
 /// |-----|-------------|
@@ -49,16 +49,13 @@ macro_rules! get_field {
 /// | `"Producer"` | `info.producer` |
 /// | `"Year"` | `info.creation_date.year` |
 ///
-/// Fields absent from the PDF info dictionary are inserted with the value `"Unknown"`,
-/// except `"Year"` which is inserted as an empty string when the creation date is missing.
-///
 /// # Errors
 ///
 /// Returns `Err` in two distinct cases:
 /// - The `pdf` crate cannot open or parse the file (corrupt data, unsupported version,
 ///   permission denied, etc.) — the underlying crate error is propagated.
 /// - The PDF contains no info dictionary — returns [`PdfMetaError::NoInfoDict`] carrying `filename`.
-pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, PdfMetaError> {
+pub fn get_metadata(filename: &str) -> Result<HashMap<String, Option<String>>, PdfMetaError> {
     log::debug!("Opening file: {filename}");
 
     let file = pdf::file::FileOptions::cached().open(filename)?;
@@ -66,7 +63,7 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, PdfMetaEr
         return Err(PdfMetaError::NoInfoDict(filename.to_owned()));
     };
 
-    let mut metadata_map: HashMap<String, String> = HashMap::new();
+    let mut metadata_map: HashMap<String, Option<String>> = HashMap::new();
 
     get_field!(info, author, metadata_map, "Author");
     get_field!(info, title, metadata_map, "Title");
@@ -75,11 +72,12 @@ pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, PdfMetaEr
     get_field!(info, creator, metadata_map, "Creator");
     get_field!(info, producer, metadata_map, "Producer");
 
-    if let Some(creation_date) = &info.creation_date {
-        metadata_map.insert("Year".to_string(), creation_date.year.to_string());
-    } else {
-        metadata_map.insert("Year".to_string(), String::new());
-    }
+    metadata_map.insert(
+        "Year".to_string(),
+        info.creation_date
+            .as_ref()
+            .map(|d| d.year.to_string()),
+    );
 
     log::debug!("metadata_map: {metadata_map:?}");
 
@@ -92,20 +90,20 @@ mod tests {
     use pdf::primitive::PdfString;
 
     #[test]
-    fn pdf_string_to_string_returns_unknown_for_none() {
-        assert_eq!(pdf_string_to_string(None), "Unknown");
+    fn pdf_string_to_string_returns_none_for_none() {
+        assert_eq!(pdf_string_to_string(None), None);
     }
 
     #[test]
-    fn pdf_string_to_string_returns_value_for_some() {
+    fn pdf_string_to_string_returns_some_for_present_value() {
         let ps = PdfString::from("Rust Programming");
-        assert_eq!(pdf_string_to_string(Some(&ps)), "Rust Programming");
+        assert_eq!(pdf_string_to_string(Some(&ps)), Some("Rust Programming".to_owned()));
     }
 
     #[test]
     fn pdf_string_to_string_strips_double_quotes() {
         let ps = PdfString::from("He said \"hello\"");
-        assert_eq!(pdf_string_to_string(Some(&ps)), "He said hello");
+        assert_eq!(pdf_string_to_string(Some(&ps)), Some("He said hello".to_owned()));
     }
 
     #[test]
