@@ -57,7 +57,7 @@ macro_rules! get_field {
 /// Returns `Err` in two distinct cases:
 /// - The `pdf` crate cannot open or parse the file (corrupt data, unsupported version,
 ///   permission denied, etc.) — the underlying crate error is propagated.
-/// - The PDF contains no info dictionary — the error message includes `filename`.
+/// - The PDF contains no info dictionary — returns [`PdfMetaError::NoInfoDict`] carrying `filename`.
 pub fn get_metadata(filename: &str) -> Result<HashMap<String, String>, PdfMetaError> {
     log::debug!("Opening file: {filename}");
 
