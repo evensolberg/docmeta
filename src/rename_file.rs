@@ -86,6 +86,8 @@ pub fn rename_file(
 
     // Single-pass sanitisation: semantic replacements + forbidden-char removal.
     // Combining these avoids the intermediate Strings produced by chained .replace() calls.
+    // Capacity is a lower-bound hint; ':' expands to two chars so a colon-heavy filename
+    // may trigger one realloc — still far fewer allocations than the original approach.
     let mut sanitised = String::with_capacity(new_filename.len());
     for ch in new_filename.chars() {
         match ch {
@@ -352,6 +354,7 @@ mod tests {
 
     #[test]
     fn leading_and_trailing_spaces_in_tag_are_trimmed() {
+        // dry_run=true — no real file needed; exercises the trim path only.
         let t = tags(&[("Title", "  Spaced Title  ")]);
         let result = rename_file("placeholder.epub", &t, "%t", true).expect("ok");
         let stem = std::path::Path::new(&result)
@@ -359,11 +362,10 @@ mod tests {
             .unwrap()
             .to_str()
             .unwrap();
-        assert!(
-            !stem.starts_with(' '),
-            "leading space not trimmed: {result}"
+        assert_eq!(
+            stem, "Spaced Title",
+            "spaces not trimmed correctly: {result}"
         );
-        assert!(!stem.ends_with(' '), "trailing space not trimmed: {result}");
     }
 
     // ── dry run ──────────────────────────────────────────────────────────────
